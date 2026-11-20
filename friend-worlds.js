@@ -28,6 +28,8 @@ export function setupFriendWorlds({artwork,buildFillBoundary,saveArtwork,shareAr
   function controls(){
     $('room-host').hidden=Boolean(id||connecting);
     $('room-copy').hidden=!id||!ready;
+    $('room-invite-label').hidden=!id||!ready;
+    $('room-invite').value=id&&ready?inviteUrl():'';
     $('room-leave').hidden=!id&&!connecting;
     picker.disabled=connecting||Boolean(host);
     $('room-save').disabled=$('room-share').disabled=!ready;
@@ -251,15 +253,19 @@ export function setupFriendWorlds({artwork,buildFillBoundary,saveArtwork,shareAr
     url.searchParams.delete('world');
     history.replaceState(null,'',url);
   };
-  $('room-copy').onclick=async()=>{
+  function inviteUrl(){
     const url=new URL(location.href);
     url.searchParams.set('world',world);
     url.searchParams.set('friend',id);
     url.hash='friend-room';
+    return url.href;
+  }
+  $('room-copy').onclick=async()=>{
+    const url=inviteUrl();
     try{
-      await navigator.clipboard.writeText(url.href);
+      await navigator.clipboard.writeText(url);
       status('Invite copied. Send the link to your friends.');
-    }catch{window.prompt('Copy your friend room link',url.href);}
+    }catch{$('room-invite').select();status('Select and copy the invite link.');}
   };
   const params=new URLSearchParams(location.search);
   const invite=params.get('friend'), requestedWorld=params.get('world');

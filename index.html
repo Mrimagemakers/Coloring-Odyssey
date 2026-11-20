@@ -42,7 +42,7 @@ header,footer{border-color:#4d3c64}
 <section id="friend-room" class="friend-room" hidden aria-labelledby="room-title">
 <h3 id="room-title"></h3>
 <div class="row"><button id="room-host" type="button">Start a friend room</button><button id="room-copy" type="button" hidden>Copy invite link</button><button id="room-leave" type="button" hidden>Leave room</button></div>
-<p id="room-status" role="status"></p>
+<div id="room-invite-label" hidden><label>Invite link <input id="room-invite" type="text" readonly></label></div><p id="room-status" role="status"></p>
 <div class="row"><label>New sheet <select id="room-sheet"></select></label><button id="room-brush" type="button" aria-pressed="true">✎ Brush</button><button id="room-fill" type="button" aria-pressed="false">◈ Fill</button><label>Color <input id="room-color" type="color" value="#914ff5"></label><label>Brush size <input id="room-size" type="range" min="2" max="45" value="12"></label></div>
 <canvas id="room-canvas" class="friend-board" width="720" height="480" aria-label="Shared drawing canvas"></canvas>
 <div class="row"><button id="room-save" type="button">Save to gallery</button><button id="room-share" type="button">Share PNG</button><span id="room-save-status" role="status"></span></div>
@@ -58,4 +58,4 @@ header,footer{border-color:#4d3c64}
 <label>Import a book PDF or line-art image <input id="import" type="file" accept="application/pdf,.pdf,image/png,image/jpeg,image/webp" style="max-width:100%"></label>
 <div class="row" id="pdf-controls" hidden style="display:none"><button id="pdf-prev" type="button" aria-label="Previous PDF page">←</button><span id="pdf-count"></span><button id="pdf-next" type="button" aria-label="Next PDF page">→</button></div><div id="status" role="status" aria-live="polite"></div></div><div class="paper"><canvas id="paper" width="720" height="480" aria-label="Coloring page"></canvas></div></div></section>
 <section><h2 id="gallery-title">My gallery</h2><p id="gallery-status" role="status"></p><div class="gallery" id="gallery"></div></section>
-</main><footer><a href="https://pengamepublishing.com/">PenGame Publishing</a></footer><script type="module" src="./app.js?v=friend-worlds-1"></script></body></html>
+</main><footer><a href="https://pengamepublishing.com/">PenGame Publishing</a></footer><script type="module" src="./app.js?v=friend-worlds-2"></script></body></html>

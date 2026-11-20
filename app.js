@@ -1,5 +1,5 @@
 import {books,artwork} from './art.js?v=studio-cards-1';
-import {setupFriendWorlds} from './friend-worlds.js?v=1';
+import {setupFriendWorlds} from './friend-worlds.js?v=2';
 import {bookPages} from './book-pages.js';
 
 const collections=books.map((_,index)=>bookPages[index]?.numbers??[]);
