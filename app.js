@@ -1,4 +1,5 @@
 import {books,artwork} from './art.js?v=studio-cards-1';
+import {setupFriendWorlds} from './friend-worlds.js?v=1';
 import {bookPages} from './book-pages.js';
 
 const collections=books.map((_,index)=>bookPages[index]?.numbers??[]);
@@ -118,6 +119,7 @@ function setLoading(value){
   loading=value;
   $('save').disabled=value;
   $('download').disabled=value;
+  $('share').disabled=value;
   canvas.setAttribute('aria-busy',String(value));
 }
 async function open(nextBook,nextPage,remember=true){
@@ -411,17 +413,43 @@ function showGallery(){
     button.append(image,item.title);
     button.setAttribute('aria-label','Download '+item.title);
     button.onclick=()=>download(item.image,item.title);
-    $('gallery').append(button);
+    const card=document.createElement('article');
+    const share=document.createElement('button');
+    share.type='button';
+    share.textContent='Share PNG';
+    share.setAttribute('aria-label','Share '+item.title);
+    share.onclick=()=>shareArtwork(item.image,item.title,message=>{$('gallery-status').textContent=message;});
+    card.append(button,share);
+    $('gallery').append(card);
   }
 }
-$('save').onclick=()=>{
-  const updated=[{image:canvas.toDataURL(),title:title()},...gallery].slice(0,16);
+function saveArtwork(image,label,report){
+  const updated=[{image,title:label},...gallery].slice(0,16);
   try{localStorage.setItem('coloring-odyssey-gallery',JSON.stringify(updated));}
-  catch{status('Could not save to this browser. Use Download PNG to keep your artwork.');return;}
+  catch{report('Could not save to this browser. Use Share PNG to keep a copy.');return;}
   gallery=updated;
   showGallery();
-  status('Saved to your gallery on this device.');
-};
+  report('Saved to your gallery on this device.');
+}
+async function shareArtwork(image,label,report){
+  const filename=label.replace(/[^a-z0-9]+/gi,'-').toLowerCase()+'.png';
+  const bytes=Uint8Array.from(atob(image.split(',')[1]),character=>character.charCodeAt(0));
+  const file=new File([bytes],filename,{type:'image/png'});
+  try{
+    if(navigator.canShare?.({files:[file]})){
+      await navigator.share({files:[file],title:label});
+      report('PNG shared.');
+      return;
+    }
+  }catch(error){
+    if(error.name==='AbortError') return;
+  }
+  download(image,label);
+  report('PNG downloaded and ready to share.');
+}
+$('save').onclick=()=>saveArtwork(canvas.toDataURL(),title(),status);
+$('share').onclick=()=>shareArtwork(canvas.toDataURL(),title(),status);
+setupFriendWorlds({artwork,buildFillBoundary,saveArtwork,shareArtwork});
 $('download').onclick=()=>download(canvas.toDataURL(),title());
 showGallery();
 open(0,firstIllustration(0),false);
