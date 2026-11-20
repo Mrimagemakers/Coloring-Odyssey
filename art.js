@@ -190,7 +190,7 @@ function drawExpandedScene(ctx,book,page,shape,oval,box,star){
       shape('M-71 23Q-22 8 30 26Q-7 50-71 23Z',false,2);
     }else{
       shape(profiles[variation-1]);
-      if(variation===7){
+      if(variation===8){
         oval(0,4,9,33);
         for(const x of [-69,-37,37,69]) oval(x,x%2?12:-22,12,8);
       }else{
