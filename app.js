@@ -2,6 +2,43 @@ import {books,artwork} from './art.js?v=studio-cards-1';
 import {setupFriendWorlds} from './friend-worlds.js?v=2';
 import {bookPages} from './book-pages.js';
 
+const generatedTitles=['Owl and Rabbit','Sunflower Patch','Castle in the Clouds','Camper in the Pines','The Young Engineer','Star Quilt Rosette'];
+const generatedIndexes=generatedTitles.map((title,i)=>{
+  const pages=books[i+4][3];
+  pages.push(title);
+  return pages.length-1;
+});
+let sheetPromise;
+const generatedPreviews=new Map();
+function generatedTile(book,page){
+  return book>=4&&generatedIndexes[book-4]===page?book-4:-1;
+}
+function loadArtSheet(){
+  if(!sheetPromise){
+    const sheet=new Image();
+    sheet.src='./pages/illustrated-collection.png';
+    sheetPromise=sheet.decode().then(()=>sheet).catch(error=>{sheetPromise=null;throw error;});
+  }
+  return sheetPromise;
+}
+function paintGeneratedTile(ctx,sheet,tile,size){
+  const w=sheet.naturalWidth/3,h=sheet.naturalHeight/2;
+  const margin=size*.035;
+  ctx.fillStyle='#fff';
+  ctx.fillRect(0,0,size,size);
+  ctx.drawImage(sheet,(tile%3)*w,Math.floor(tile/3)*h,w,h,margin,margin,size-2*margin,size-2*margin);
+}
+function previewGeneratedTile(target,tile){
+  loadArtSheet().then(sheet=>{
+    if(!generatedPreviews.has(tile)){
+      const thumbnail=document.createElement('canvas');
+      thumbnail.width=thumbnail.height=220;
+      paintGeneratedTile(thumbnail.getContext('2d'),sheet,tile,220);
+      generatedPreviews.set(tile,thumbnail.toDataURL('image/webp',.8));
+    }
+    target.src=generatedPreviews.get(tile);
+  }).catch(()=>{});
+}
 const collections=books.map((_,index)=>bookPages[index]?.numbers??[]);
 const pageCount=index=>books[index][3].length+collections[index].length;
 const firstIllustration=index=>collections[index].length>1?books[index][3].length+1:0;
@@ -63,6 +100,8 @@ books.forEach(([name,character,tint],i)=>{
     front.src=print[0];
     front.onerror=()=>front.remove();
     cover.append(front);
+  }else if(i>=4){
+    previewGeneratedTile(image,i-4);
   }else if(original){
     const preview=new Image();
     preview.alt='';
@@ -76,7 +115,7 @@ books.forEach(([name,character,tint],i)=>{
   button.style.setProperty('--tint',tint);
   button.append(cover,label,credit);
   button.onclick=()=>{
-    open(i,firstIllustration(i));
+    open(i,generatedIndexes[i-4]??firstIllustration(i));
     $('studio').scrollIntoView();
   };
   const card=document.createElement('article');
@@ -115,7 +154,10 @@ function showPageTiles(){
     const preview=new Image();
     preview.alt='';
     preview.loading='lazy';
-    if(number){
+    const tile=generatedTile(book,index);
+    if(tile>=0){
+      previewGeneratedTile(preview,tile);
+    }else if(number){
       preview.src=bookPageUrl(book,number);
     }else{
       artwork(thumbnails.getContext('2d'),book,index);
@@ -183,6 +225,20 @@ async function open(nextBook,nextPage,remember=true){
   if(imported){
     fitPaper(imported.width,imported.height);
     ctx.putImageData(imported,0,0);
+  }else if(generatedTile(book,page)>=0){
+    setLoading(true);
+    status('Opening '+title()+'…');
+    const tile=generatedTile(book,page);
+    try{
+      const sheet=await loadArtSheet();
+      if(request!==importId) return;
+      fitPaper(650,650);
+      paintGeneratedTile(ctx,sheet,tile,650);
+      setLoading(false);
+    }catch{
+      if(request===importId) status('Could not open this page. Choose another page or try again.');
+      return;
+    }
   }else if(original){
     setLoading(true);
     status('Opening '+title()+'…');
