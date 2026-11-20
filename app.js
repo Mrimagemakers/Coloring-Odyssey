@@ -17,6 +17,7 @@ let book=0,page=0,mode='fill',history=[],stroke=null,importId=0;
 let updatePreview=()=>{};
 const edits=new Map(), imports=new Map(), pdfs=new Map();
 let loading=false, changed=false;
+let fillBoundary=null;
 const snapshot=()=>ctx.getImageData(0,0,canvas.width,canvas.height);
 const refresh=()=>updatePreview();
 const key=()=>book+':'+page+(page===-1 && pdfs.has(book) ? ':'+pdfs.get(book).page : '');
@@ -76,6 +77,7 @@ async function open(nextBook,nextPage,remember=true){
   book=nextBook;
   page=nextPage;
   stroke=null;
+  fillBoundary=null;
   const [name,,,pages]=books[book];
   $('book-title').textContent=name;
   const options=pages.map((label,i)=>new Option(label,i));
@@ -93,16 +95,17 @@ async function open(nextBook,nextPage,remember=true){
   $('pages').value=page;
   updatePdfControls();
   [...$('books').children].forEach((button,i)=>button.setAttribute('aria-pressed',i===book));
-  const image=edits.get(key())??(page===-1?imports.get(book)?.pixels:null);
+  const imported=page===-1?imports.get(book)?.pixels:null;
+  const edit=edits.get(key());
   history=[];
   $('undo').disabled=true;
   $('previous').disabled=page<=0;
   $('next').disabled=page<0 || page>=pageCount(book)-1;
   setLoading(false);
   const original=sourcePage(book,page);
-  if(image){
-    fitPaper(image.width,image.height);
-    ctx.putImageData(image,0,0);
+  if(imported){
+    fitPaper(imported.width,imported.height);
+    ctx.putImageData(imported,0,0);
   }else if(original){
     setLoading(true);
     status('Opening '+title()+'…');
@@ -122,6 +125,8 @@ async function open(nextBook,nextPage,remember=true){
     fitPaper(720,480);
     artwork(ctx,book,page);
   }
+  fillBoundary=buildFillBoundary(snapshot());
+  if(edit) ctx.putImageData(edit,0,0);
   status(mode==='fill'?'Tap an enclosed area to fill it.':'Drag to paint.');
   refresh();
 }
@@ -147,10 +152,41 @@ for(const tool of ['fill','brush']) $(''+tool).onclick=()=>{
   status(mode==='fill'?'Tap an enclosed area to fill it.':'Drag to paint.');
 };
 $('color').oninput=event=>chooseColor(event.target.value);
+function buildFillBoundary({data,width,height}){
+  const ink=new Uint8Array(width*height);
+  for(let i=0;i<ink.length;i++){
+    const offset=i*4;
+    ink[i]=data[offset+3]>127 &&
+      0.2126*data[offset]+0.7152*data[offset+1]+0.0722*data[offset+2]<155;
+  }
+  const boundary=ink.slice();
+  const maxGap=5;
+  // Only original ink can anchor a bridge. Bridged pixels never extend it.
+  for(const [dx,dy] of [[1,0],[0,1],[1,1],[-1,1]]){
+    const step=dx+dy*width;
+    for(let y=0;y<height;y++){
+      for(let x=0;x<width;x++){
+        const start=y*width+x;
+        if(!ink[start]) continue;
+        const nextX=x+dx, nextY=y+dy;
+        if(nextX<0 || nextX>=width || nextY>=height || ink[start+step]) continue;
+        for(let distance=2;distance<=maxGap+1;distance++){
+          const endX=x+dx*distance, endY=y+dy*distance;
+          if(endX<0 || endX>=width || endY>=height) break;
+          if(!ink[start+step*distance]) continue;
+          for(let i=1;i<distance;i++) boundary[start+i*step]=1;
+          break;
+        }
+      }
+    }
+  }
+  return boundary;
+}
 function fill(x,y){
   if(loading) return;
   const {width,height}=canvas;
   const start=Math.max(0,Math.min(width-1,Math.floor(x)))+width*Math.max(0,Math.min(height-1,Math.floor(y)));
+  if(!fillBoundary || fillBoundary[start]) return;
   const image=snapshot(), pixels=image.data;
   const original=pixels.slice(start*4,start*4+3);
   const color=$('color').value.slice(1).match(/../g).map(hex=>parseInt(hex,16));
@@ -159,7 +195,7 @@ function fill(x,y){
   const queue=new Int32Array(width*height), seen=new Uint8Array(width*height);
   let first=0,last=0;
   function add(i){
-    if(seen[i]) return;
+    if(seen[i] || fillBoundary[i]) return;
     seen[i]=1;
     if(original.every((value,c)=>Math.abs(value-pixels[i*4+c])<=25)) queue[last++]=i;
   }
