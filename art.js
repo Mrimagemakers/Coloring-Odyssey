@@ -10,6 +10,88 @@ export const books=[
   ["Characters","Original portraits","#724d91",["The Roller-Skate Hero"]],
   ["Patterns","Geometric designs","#a6437d",["Sunburst Mandala"]]
 ];
+
+const extraPages=[
+  [
+    "Mallard Cove",
+    "Fox Hollow",
+    "Owl at Dusk",
+    "Turtle Island",
+    "Bunny Meadow",
+    "Deer Crossing",
+    "Bear Creek",
+    "Otter Rapids",
+    "Butterfly Marsh",
+    "Wolf Ridge",
+    "Swan Lake"
+  ],
+  [
+    "Fern Grotto",
+    "Poppy Fields",
+    "Mushroom Circle",
+    "Lotus Pool",
+    "Sunflower Farm",
+    "Cactus Bloom",
+    "Iris Garden",
+    "Wildflower Trail",
+    "Rose Trellis",
+    "Maple Grove",
+    "Orchid Conservatory"
+  ],
+  [
+    "Moon Gate",
+    "Dragon Keep",
+    "Crystal Citadel",
+    "Fairy Village",
+    "Wizard’s Observatory",
+    "Cloud Bridge",
+    "Mermaid Palace",
+    "Phoenix Tower",
+    "Unicorn Glade",
+    "Enchanted Library",
+    "Floating Fortress"
+  ],
+  [
+    "Desert Rally",
+    "Moon Rover",
+    "Fire Engine",
+    "City Tram",
+    "Race Day",
+    "Mountain Pickup",
+    "Beach Buggy",
+    "Delivery Van",
+    "Vintage Racer",
+    "Expedition Rig",
+    "Midnight Cruiser"
+  ],
+  [
+    "The Trail Guide",
+    "The Space Cadet",
+    "The Garden Keeper",
+    "The Skate Captain",
+    "The Sound Engineer",
+    "The Ocean Explorer",
+    "The Street Artist",
+    "The Pilot",
+    "The Inventor",
+    "The Stage Star",
+    "The Stargazer"
+  ],
+  [
+    "Crystal Tessellation",
+    "Petal Compass",
+    "Orbit Rings",
+    "Diamond Mosaic",
+    "Kaleidoscope Bloom",
+    "Ribbon Rosette",
+    "Honeycomb Sun",
+    "Star Quilt",
+    "Lotus Spiral",
+    "Prism Wheel",
+    "Midnight Mandala"
+  ]
+];
+extraPages.forEach((pages,index)=>books[index+4][3].push(...pages));
 const linework=[
   [
     "M288 317L452 136M303 328L466 149M260 332L283 353M252 347L268 361\nM399 159l10 10 18-20-10-10zM333 231l10 10 18-20-10-10z\nM20 427H700M20 445H700M75 427v18m70-18v18m70-18v18m70-18v18m70-18v18m70-18v18m70-18v18m70-18v18m70-18v18",
@@ -51,6 +133,115 @@ const linework=[
   ]
 ];
 const accents=[[[134,120],[240,62],[581,60],[637,115],[92,175]],[[172,194],[194,398],[561,398],[108,208],[609,65]],[[144,152],[167,365],[607,251],[644,324],[71,318]],[[112,186],[211,115],[568,218],[632,286],[165,317]],[[138,114],[204,88],[517,126],[574,88],[319,133]],[[125,237],[157,310],[552,312],[586,245],[99,367]],[[121,221],[176,169],[596,214],[555,317],[152,302]],[[82,220],[218,121],[483,107],[622,206],[357,88]],[[146,160],[559,151],[129,308],[568,304],[605,366]],[[66,164],[653,165],[65,314],[653,314]]];
+
+function drawExpandedScene(ctx,book,page,shape,oval,box,star){
+  const theme=book-4;
+  const variation=page-1;
+  const center=350+(variation%3-1)*23;
+  const diamond=(x,y,r)=>shape(`M${x} ${y-r}l${r} ${r}-${r} ${r}-${r}-${r}z`,false,2);
+  const leaf=(x,y,size)=>shape(`M${x} ${y}q${size/2} -${size} ${size} 0q-${size/2} ${size} -${size} 0z`);
+  const flower=(x,y,r,count)=>{
+    for(let petal=0;petal<count;petal++){
+      ctx.save();ctx.translate(x,y);ctx.rotate(petal*Math.PI*2/count);
+      oval(0,-r*.75,r*.27,r*.6);
+      ctx.restore();
+    }
+    oval(x,y,r*.32);
+  };
+  const hill=(y,crest)=>shape(`M20 ${y}Q180 ${y-crest} 340 ${y}T700 ${y}V460H20Z`);
+  const reflection=(x,y,w)=>shape(`M${x} ${y}q${w/2} -10 ${w} 0q-${w/2} 10 -${w} 0z`,false,2);
+  if(theme===5){
+    for(let ring=3;ring>=0;ring--){
+      const radius=40+ring*49;
+      const count=6+2*((variation+ring*2)%7);
+      oval(360,240,radius+21);
+      for(let spoke=0;spoke<count;spoke++){
+        ctx.save();ctx.translate(360,240);ctx.rotate((spoke+(ring%2)*.5)*Math.PI*2/count);
+        if((ring+variation)%2) diamond(radius,0,13+ring*2);
+        else leaf(radius-12,0,24+ring*2);
+        ctx.restore();
+      }
+    }
+    flower(360,240,24,6+variation%5);
+    for(const x of [79,641]) for(const y of [80,400]) flower(x,y,26,5+variation%4);
+    return;
+  }
+  oval(100+variation*46,91,30+variation%4*4);
+  for(let i=0;i<6;i++) star(40+((i*117+variation*31)%630),49+(i%2)*62,5+(i+variation)%5);
+  hill(340,50+variation%4*17);
+  hill(391,30+variation%3*15);
+  if(theme===0){
+    const scale=1+(variation%4)*.08;
+    ctx.save();ctx.translate(center,305);ctx.scale(scale,scale);
+    const profiles=[
+      'M-98 15Q-90-30-43-45L-65-88-6-61 38-77 52-35Q96-20 111 11L68 33Q12 58-41 38L-75 57-68 25Z',
+      'M-87 30Q-114-2-81-43L-61-68-23-48 30-48 69-68 90-38Q120 13 81 40Q0 84-87 30Z',
+      'M-112 12Q-108-43-45-51Q24-63 73-24L104-39 112-7 89 17Q51 51-9 38L-39 62-57 32Z',
+      'M-98 26Q-91-9-46-36L-51-96Q-26-108-9-47L10-46Q25-114 49-90L34-35Q89-16 91 26Q48 70-98 26Z',
+      'M-103 8Q-108-31-64-48L-72-87-44-65-32-102-20-59 36-52 52-91 66-66 89-73 74-38Q112-15 96 24Q31 74-44 40Z',
+      'M-91 22Q-112-18-80-39Q-99-71-65-78Q-39-84-28-55Q0-68 37-54Q49-86 76-76Q106-63 85-37Q115-6 88 29Q0 83-91 22Z',
+      'M-116 20Q-139-3-110-14L-67 2Q-33-48 33-39Q54-65 84-52Q119-42 116-9Q113 25 72 32Q38 63-47 45Z',
+      'M0-30Q-52-92-100-64Q-143-25-72 0Q-133 35-82 64Q-40 69 0 26Q40 69 82 64Q133 35 72 0Q143-25 100-64Q52-92 0-30Z',
+      'M-108 27Q-105-3-67-18L-38-72-2-38 38-71 58-31 112 3 78 35Q30 72-108 27Z'
+    ];
+    if(variation===0 || variation===10){
+      shape('M-110 20Q-51-30 9 1Q-22-50 10-77Q46-108 68-75L97-66 68-54Q65-19 98 9Q51 62-39 53Z');
+      oval(53,-73,4);
+      shape('M-71 23Q-22 8 30 26Q-7 50-71 23Z',false,2);
+    }else{
+      shape(profiles[variation-1]);
+      if(variation===7){
+        oval(0,4,9,33);
+        for(const x of [-69,-37,37,69]) oval(x,x%2?12:-22,12,8);
+      }else{
+        for(const x of [-30,33]){oval(x,-9,11,13);oval(x,-9,4,5);}
+        oval(1,15,10,6);
+        shape('M-20 31Q0 43 22 31',false,2);
+      }
+    }
+    ctx.restore();
+    for(let i=0;i<8;i++) reflection(32+i*82,412+i%2*24,31+variation%4*4);
+  }else if(theme===1){
+    for(let i=0;i<7;i++){
+      const x=90+i*90, y=190+((variation*37+i*53)%125), r=18+(variation+i)%4*7;
+      shape(`M${x} 420Q${x+18} 345 ${x} ${y}`,false,2);
+      leaf(x-38,368-i%2*19,38);leaf(x,347-i%2*17,38);
+      if(variation%3===0){oval(x,y,r,r*.65);for(let petal=0;petal<5;petal++)oval(x+(petal-2)*r*.35,y,r*.12,r*.22);}
+      else flower(x,y,r,4+(variation+i)%6);
+    }
+  }else if(theme===2){
+    for(let i=0;i<5;i++){
+      const x=center-177+i*71, top=147+((i*49+variation*24)%91);
+      box(x,top,57,380-top);
+      shape(`M${x-8} ${top}l36 -${36+(i+variation)%4*11} 36 ${36+(i+variation)%4*11}z`);
+      for(let y=top+22;y<349;y+=35){oval(x+28,y,8,12);shape(`M${x+7} ${y+17}h44`,false,2);}
+      diamond(x+28,top-13,7);
+    }
+    shape(`M${center-39} 399V332Q${center} 263 ${center+39} 332V399Z`);
+    for(let i=0;i<5;i++) diamond(center-96+i*48,425,12);
+  }else if(theme===3){
+    const roof=195+variation%4*12, wheel=38+variation%3*4;
+    box(20,377,680,82);
+    shape(`M78 346L110 293 205 265 264 ${roof}H${428+variation%4*15}L500 265 596 283 645 330 628 369H81Z`);
+    shape(`M227 265L279 ${roof+14}H354V265ZM374 265V${roof+14}H421L476 265Z`);
+    for(const x of [176,552]){oval(x,355,wheel);oval(x,355,20);flower(x,355,13,5);}
+    for(let i=0;i<4;i++){box(251+i*55,312,40,11);diamond(278+i*53,288,9);}
+    oval(108,323,15,9);oval(616,321,15,9);
+    for(let i=0;i<6;i++) box(37+i*111,422,61,8);
+  }else{
+    const hair=variation%4;
+    shape(`M${center-126} 417Q${center-102} 320 ${center-46} 304H${center+46}Q${center+102} 320 ${center+126} 417Z`);
+    oval(center,240,72,90);
+    if(hair===0){for(let i=0;i<7;i++) oval(center-60+i*20,153-i%2*13,22,25);}
+    else if(hair===1){shape(`M${center-82} 214Q${center-82} 114 ${center} 124Q${center+81} 117 ${center+81} 212Q${center+2} 158 ${center-82} 214Z`);}
+    else{box(center-78,153,156,29);oval(center,141,49,24);}
+    for(const x of [center-27,center+27]){oval(x,238,13,10);oval(x,238,5);if(variation%2) oval(x,238,22,17);}
+    shape(`M${center-20} 277Q${center} 288 ${center+20} 277Q${center} 308 ${center-20} 277Z`);
+    flower(center,367,27,5+variation%6);
+    for(const x of [center-91,center+91]) for(let i=0;i<3;i++) diamond(x,353+i*22,7);
+  }
+  for(const x of [51,669]) for(const y of [246,289,332]) diamond(x,y,8);
+}
 
 export function artwork(ctx,book,page){
   function shape(path,paint=true,width=4){
@@ -179,6 +370,12 @@ export function artwork(ctx,book,page){
       shape('M274 280L313 242L338 290ZM382 288L405 242L444 280Z');
       shape('M274 311Q358 351 447 311Q419 367 361 367Q303 367 274 311Z');
     }
+  }
+  if(book>=4 && page>0){
+    drawExpandedScene(ctx,book,page,shape,oval,box,star);
+    shape('M9 9H711V471H9Z',false,1.4);
+    ctx.restore();
+    return;
   }
   if(book===4){
     shape('M20 333Q85 302 151 333T281 333T411 333T541 333T699 333V460H20Z');

@@ -1,4 +1,4 @@
-import {books,artwork} from './art.js';
+import {books,artwork} from './art.js?v=studio-cards-1';
 import {bookPages} from './book-pages.js';
 
 const collections=books.map((_,index)=>bookPages[index]?.numbers??[]);
@@ -46,16 +46,66 @@ books.forEach(([name,character,tint],i)=>{
   const button=document.createElement('button'), image=new Image(), label=document.createElement('strong'), credit=document.createElement('small');
   image.src=thumbnails.toDataURL();
   image.alt='';
+  image.loading='lazy';
+  image.className='cover-linework';
+  const cover=document.createElement('span');
+  cover.className='collection-cover';
+  cover.append(image);
+  const original=sourcePage(i,firstIllustration(i));
+  if(original){
+    const preview=new Image();
+    preview.alt='';
+    preview.loading='lazy';
+    preview.className='cover-original';
+    preview.src=bookPageUrl(i,original);
+    cover.append(preview);
+  }
   label.textContent=name;
   credit.textContent=character+' · '+pageCount(i)+' pages';
   button.style.setProperty('--tint',tint);
-  button.append(image,label,credit);
+  button.append(cover,label,credit);
   button.onclick=()=>{
     open(i,firstIllustration(i));
     $('studio').scrollIntoView();
   };
   $('books').append(button);
 });
+const pageGrid=$('page-thumbnails');
+const browseSize=8;
+let browseOffset=0;
+function showPageTiles(){
+  const names=books[book][3];
+  const total=pageCount(book);
+  const limit=Math.min(browseOffset+browseSize,total);
+  $('tile-count').textContent=(browseOffset+1)+'–'+limit+' of '+total;
+  $('tiles-back').disabled=browseOffset===0;
+  $('tiles-forward').disabled=limit===total;
+  const tiles=[];
+  for(let index=browseOffset;index<limit;index++){
+    const button=document.createElement('button');
+    button.type='button';
+    const label=document.createElement('span');
+    const number=sourcePage(book,index);
+    label.textContent=names[index]??(number===2?'Color Test':'Book Page '+number);
+    button.setAttribute('aria-pressed',String(index===page));
+    const preview=new Image();
+    preview.alt='';
+    preview.loading='lazy';
+    if(number){
+      preview.src=bookPageUrl(book,number);
+    }else{
+      artwork(thumbnails.getContext('2d'),book,index);
+      preview.src=thumbnails.toDataURL('image/webp',.65);
+    }
+    button.append(preview,label);
+    button.onclick=()=>open(book,index);
+    tiles.push(button);
+  }
+  pageGrid.replaceChildren(...tiles);
+}
+$('page-browser').addEventListener('toggle',()=>{if($('page-browser').open) showPageTiles();});
+$('tiles-back').onclick=()=>{browseOffset-=browseSize;showPageTiles();};
+$('tiles-forward').onclick=()=>{browseOffset+=browseSize;showPageTiles();};
 function rememberArtwork(){
   if(!loading && changed) edits.set(key(),snapshot());
 }
@@ -93,6 +143,8 @@ async function open(nextBook,nextPage,remember=true){
   $('pages').replaceChildren(...groups);
   if(imports.has(book)) $('pages').append(new Option(imports.get(book).name,-1));
   $('pages').value=page;
+  browseOffset=Math.floor(Math.max(0,page)/browseSize)*browseSize;
+  if($('page-browser').open) showPageTiles();
   updatePdfControls();
   [...$('books').children].forEach((button,i)=>button.setAttribute('aria-pressed',i===book));
   const imported=page===-1?imports.get(book)?.pixels:null;
