@@ -13,7 +13,7 @@
 <div class="row"><button id="fill" aria-pressed="true">Fill</button><button id="brush" aria-pressed="false">Brush</button><button id="undo" disabled>Undo</button></div>
 <label>Brush size <input id="size" type="range" min="2" max="45" value="12"></label>
 <div class="row"><button id="save">Save to gallery</button><button id="download">Download PNG</button></div>
-<label>Add a line-art image <input id="import" type="file" accept="image/png,image/jpeg,image/webp" style="max-width:100%"></label>
-<div id="status" role="status" aria-live="polite"></div></div><div class="paper"><canvas id="paper" width="720" height="480" aria-label="Coloring page"></canvas></div></div></section>
+<label>Import a book PDF or line-art image <input id="import" type="file" accept="application/pdf,.pdf,image/png,image/jpeg,image/webp" style="max-width:100%"></label>
+<div class="row" id="pdf-controls" hidden style="display:none"><button id="pdf-prev" type="button" aria-label="Previous PDF page">←</button><span id="pdf-count"></span><button id="pdf-next" type="button" aria-label="Next PDF page">→</button></div><div id="status" role="status" aria-live="polite"></div></div><div class="paper"><canvas id="paper" width="720" height="480" aria-label="Coloring page"></canvas></div></div></section>
 <section><h2 id="gallery-title">My gallery</h2><div class="gallery" id="gallery"></div></section>
 </main><footer><a href="https://pengamepublishing.com/">PenGame Publishing</a></footer><script type="module" src="./app.js"></script></body></html>
