@@ -3,10 +3,10 @@ const $=id=>document.getElementById(id);
 const canvas=$('paper'), ctx=canvas.getContext('2d',{willReadFrequently:true});
 const colors=['#914ff5','#c474fc','#ff6fae','#e93755','#ff7c45','#ffd565','#eced91','#9fd358','#39bc79','#08bdae','#4bc8ef','#4e78ef','#26377a','#8c5139','#182334','#ffffff'];
 let book=0,page=0,mode='fill',history=[],stroke=null,texture,importId=0;
-const edits=new Map(), imports=new Map();
+const edits=new Map(), imports=new Map(), pdfs=new Map();
 const snapshot=()=>ctx.getImageData(0,0,720,480);
 const refresh=()=>{if(texture) texture.needsUpdate=true;};
-const key=()=>book+':'+page;
+const key=()=>book+':'+page+(page===-1 && pdfs.has(book) ? ':'+pdfs.get(book).page : '');
 const title=()=>page===-1?imports.get(book)?.name:books[book][3][page];
 const status=message=>{$('status').textContent=message;};
 function chooseColor(color){
@@ -50,6 +50,7 @@ function open(nextBook,nextPage,remember=true){
   if(imports.has(book)) options.push(new Option(imports.get(book).name,-1));
   $('pages').replaceChildren(...options);
   $('pages').value=page;
+  updatePdfControls();
   [...$('books').children].forEach((button,i)=>button.setAttribute('aria-pressed',i===book));
   const image=edits.get(key())??(page===-1?imports.get(book)?.pixels:null);
   if(image) ctx.putImageData(image,0,0);
@@ -141,29 +142,89 @@ canvas.onpointermove=event=>{
   stroke.at=at;
 };
 canvas.onlostpointercapture=()=>{stroke=null;};
+function updatePdfControls(){
+  const pdf=pdfs.get(book);
+  const visible=page===-1 && Boolean(pdf);
+  $('pdf-controls').hidden=!visible;
+  $('pdf-controls').style.display=visible?'flex':'none';
+  if(!visible) return;
+  $('pdf-count').textContent=pdf.page+' / '+pdf.document.numPages;
+  $('pdf-prev').disabled=pdf.page<=1;
+  $('pdf-next').disabled=pdf.page>=pdf.document.numPages;
+}
+function whiteCanvas(){
+  const surface=document.createElement('canvas');
+  surface.width=720;
+  surface.height=480;
+  const paint=surface.getContext('2d');
+  paint.fillStyle='#fff';
+  paint.fillRect(0,0,720,480);
+  return paint;
+}
+async function rasterPdf(documentPdf,number){
+  const source=await documentPdf.getPage(number);
+  const original=source.getViewport({scale:1});
+  const viewport=source.getViewport({scale:Math.min(720/original.width,480/original.height)});
+  const paint=whiteCanvas();
+  const transform=[1,0,0,1,(720-viewport.width)/2,(480-viewport.height)/2];
+  await source.render({canvasContext:paint,viewport,transform}).promise;
+  return paint.getImageData(0,0,720,480);
+}
+async function turnPdf(offset){
+  const pdf=pdfs.get(book);
+  if(!pdf || page!==-1) return;
+  const next=pdf.page+offset;
+  if(next<1 || next>pdf.document.numPages) return;
+  const request=++importId;
+  try{
+    const pixels=edits.get(book+':-1:'+next)??await rasterPdf(pdf.document,next);
+    if(request!==importId) return;
+    edits.set(key(),snapshot());
+    pdf.page=next;
+    imports.set(book,{name:pdf.name+' · Page '+next,pixels});
+    open(book,-1,false);
+  }catch{if(request===importId) status('Could not open that PDF page.');}
+}
+$('pdf-prev').onclick=()=>turnPdf(-1);
+$('pdf-next').onclick=()=>turnPdf(1);
 $('import').onchange=async event=>{
   const file=event.target.files[0];
   event.target.value='';
   if(!file) return;
   const request=++importId;
+  status('Opening '+file.name+'…');
+  let documentPdf;
   try{
-    const bitmap=await createImageBitmap(file);
-    if(request!==importId){bitmap.close();return;}
-    const surface=document.createElement('canvas');
-    surface.width=720;
-    surface.height=480;
-    const paint=surface.getContext('2d');
-    const ratio=Math.min(720/bitmap.width,480/bitmap.height);
-    const width=bitmap.width*ratio,height=bitmap.height*ratio;
-    paint.fillStyle='#fff';
-    paint.fillRect(0,0,720,480);
-    paint.drawImage(bitmap,(720-width)/2,(480-height)/2,width,height);
-    bitmap.close();
+    let pixels;
+    if(file.type==='application/pdf' || /\.pdf$/i.test(file.name)){
+      const base='https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/';
+      const pdfjs=await import(base+'pdf.mjs');
+      pdfjs.GlobalWorkerOptions.workerSrc=base+'pdf.worker.mjs';
+      documentPdf=await pdfjs.getDocument({data:await file.arrayBuffer(),isEvalSupported:false}).promise;
+      if(request!==importId){await documentPdf.destroy();return;}
+      pixels=await rasterPdf(documentPdf,1);
+    }else{
+      const bitmap=await createImageBitmap(file);
+      try{
+        const paint=whiteCanvas();
+        const ratio=Math.min(720/bitmap.width,480/bitmap.height);
+        const width=bitmap.width*ratio,height=bitmap.height*ratio;
+        paint.drawImage(bitmap,(720-width)/2,(480-height)/2,width,height);
+        pixels=paint.getImageData(0,0,720,480);
+      }finally{bitmap.close();}
+    }
+    if(request!==importId){if(documentPdf) await documentPdf.destroy();return;}
     if(page!==-1) edits.set(key(),snapshot());
-    edits.delete(book+':-1');
-    imports.set(book,{name:file.name,pixels:paint.getImageData(0,0,720,480)});
+    for(const id of edits.keys()) if(id===book+':-1' || id.startsWith(book+':-1:')) edits.delete(id);
+    pdfs.get(book)?.document.destroy().catch(()=>{});
+    pdfs.delete(book);
+    if(documentPdf) pdfs.set(book,{document:documentPdf,page:1,name:file.name});
+    imports.set(book,{name:documentPdf?file.name+' · Page 1':file.name,pixels});
     open(book,-1,false);
-  }catch{if(request===importId) status('Could not open that image.');}
+  }catch{
+    if(documentPdf) await documentPdf.destroy().catch(()=>{});
+    if(request===importId) status('Could not open this file. Try a PDF, PNG, JPEG, or WebP.');
+  }
 };
 let gallery=[];
 try{
