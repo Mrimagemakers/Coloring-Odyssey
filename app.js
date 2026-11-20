@@ -42,6 +42,7 @@ chooseColor(colors[0]);
 const thumbnails=document.createElement('canvas');
 thumbnails.width=720;
 thumbnails.height=480;
+const printEditions=[["./covers/hues-got-flow.jpg","B0CFDKNZXZ"],["./covers/cosmic-coloring.jpg","B0CJ4FMXJN"],["./covers/underwater-adventure.jpg","B0CJ4KN1B2"],["./covers/halloween-haunts.jpg","B0CKS6DVFM"]];
 books.forEach(([name,character,tint],i)=>{
   artwork(thumbnails.getContext('2d'),i,0);
   const button=document.createElement('button'), image=new Image(), label=document.createElement('strong'), credit=document.createElement('small');
@@ -53,7 +54,16 @@ books.forEach(([name,character,tint],i)=>{
   cover.className='collection-cover';
   cover.append(image);
   const original=sourcePage(i,firstIllustration(i));
-  if(original){
+  const print=printEditions[i];
+  if(print){
+    const front=new Image();
+    front.alt='';
+    front.loading='lazy';
+    front.className='print-cover';
+    front.src=print[0];
+    front.onerror=()=>front.remove();
+    cover.append(front);
+  }else if(original){
     const preview=new Image();
     preview.alt='';
     preview.loading='lazy';
@@ -69,7 +79,20 @@ books.forEach(([name,character,tint],i)=>{
     open(i,firstIllustration(i));
     $('studio').scrollIntoView();
   };
-  $('books').append(button);
+  const card=document.createElement('article');
+  card.className='collection-card';
+  card.append(button);
+  if(print){
+    const buy=document.createElement('a');
+    buy.className='buy-book';
+    buy.href='https://www.amazon.com/dp/'+print[1];
+    buy.target='_blank';
+    buy.rel='noopener noreferrer';
+    buy.textContent='Buy on Amazon ↗';
+    buy.setAttribute('aria-label','Buy '+name+' on Amazon');
+    card.append(buy);
+  }
+  $('books').append(card);
 });
 const pageGrid=$('page-thumbnails');
 const browseSize=8;
@@ -148,7 +171,7 @@ async function open(nextBook,nextPage,remember=true){
   browseOffset=Math.floor(Math.max(0,page)/browseSize)*browseSize;
   if($('page-browser').open) showPageTiles();
   updatePdfControls();
-  [...$('books').children].forEach((button,i)=>button.setAttribute('aria-pressed',i===book));
+  [...$('books').querySelectorAll('.collection-card > button')].forEach((button,i)=>button.setAttribute('aria-pressed',i===book));
   const imported=page===-1?imports.get(book)?.pixels:null;
   const edit=edits.get(key());
   history=[];
