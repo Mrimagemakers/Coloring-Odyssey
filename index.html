@@ -38,8 +38,16 @@ header,footer{border-color:#4d3c64}
 .books .collection-cover .print-cover{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:0;margin:0;border-radius:0;background:#17142c;transform:none;box-shadow:none}
 .buy-book{display:block;text-align:center;padding:.65rem .35rem;border:1px solid #8d6953;border-radius:10px;background:#2f2136;color:#ffdfa9;font-size:.88rem;text-decoration:none}
 .buy-book:hover{background:#44304b;text-decoration:underline}
+
+header{align-items:center;flex-wrap:wrap}
+.music-controls{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap}
+.music-controls button{white-space:nowrap;min-height:42px}
+.music-controls label{display:flex;align-items:center;gap:.35rem;color:#e6d7f4;font-size:.85rem}
+.music-controls input{width:75px;accent-color:#e8adf3}
+#music-status:empty{display:none}
+#music-status{font-size:.85rem;color:#ffdea8}
 </style></head>
-<body><header><strong>PENGAME PUBLISHING</strong><nav class="row"><a href="#worlds">Create together</a><a href="#gallery-title">My gallery</a></nav></header><main>
+<body><header><strong>PENGAME PUBLISHING</strong><nav class="row"><a href="#worlds">Create together</a><a href="#gallery-title">My gallery</a></nav><div class="music-controls"><button type="button" id="music-toggle" aria-pressed="false">♫ Play music</button><label>Volume <input type="range" id="music-volume" min="0" max="100" value="38"></label><span id="music-status" role="status"></span></div></header><main>
 <section class="hero"><div><div class="eyebrow">The Coloring Odyssey Collection</div><h1>Coloring<br><em>Odyssey</em></h1><p>Follow Hue’s magic pen through New York, explore space with Carl, and dive beneath the waves with Dr. Janice Miller.</p><div class="row"><a class="primary" href="#studio">Start coloring</a><button id="vr" disabled><span class="tool-icon" aria-hidden="true">◇</span>Enter VR</button></div><p id="xr-status" role="status">Checking VR support…</p></div><div class="stage" id="stage" aria-hidden="true"></div></section>
 <section id="worlds"><h2>Create Together</h2>
 <div class="world-cards">
@@ -65,4 +73,4 @@ header,footer{border-color:#4d3c64}
 <label>Import a book PDF or line-art image <input id="import" type="file" accept="application/pdf,.pdf,image/png,image/jpeg,image/webp" style="max-width:100%"></label>
 <div class="row" id="pdf-controls" hidden style="display:none"><button id="pdf-prev" type="button" aria-label="Previous PDF page">←</button><span id="pdf-count"></span><button id="pdf-next" type="button" aria-label="Next PDF page">→</button></div><div id="status" role="status" aria-live="polite"></div></div><div class="paper"><canvas id="paper" width="720" height="480" aria-label="Coloring page"></canvas></div></div></section>
 <section><h2 id="gallery-title">My gallery</h2><p id="gallery-status" role="status"></p><div class="gallery" id="gallery"></div></section>
-</main><footer><a href="https://pengamepublishing.com/">PenGame Publishing</a></footer><script type="module" src="./app.js?v=illustrated-editions-1"></script></body></html>
+</main><footer><a href="https://pengamepublishing.com/">PenGame Publishing</a></footer><script type="module" src="./app.js?v=illustrated-editions-1"></script><script type="module" src="./ambient-music.js?v=1"></script></body></html>
