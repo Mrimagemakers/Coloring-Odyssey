@@ -2,7 +2,13 @@ export const books=[
   ['Hue’s Got Flow','Hue Davis Jr.','#843291',['The Magic Pen','Midnight Mixtape','The Rooftop Mural']],
   ['Cosmic Coloring','Astronaut Carl Reed','#313584',['Saturn Flyby','Carl’s Space Helmet','Moon Base']],
   ['Underwater Adventure','Dr. Janice Miller','#126577',['Glowing Jellyfish','Shark Survey','Coral Garden']],
-  ['Halloween Haunts','Ravenbrook','#603488',['Ravenbrook Clocktower','The Dark Manor','Pumpkin Moon']]
+  ['Halloween Haunts','Ravenbrook','#603488',['Ravenbrook Clocktower','The Dark Manor','Pumpkin Moon']],
+  ["Animals","Wildlife","#a83e55",["Duck Pond"]],
+  ["Nature","Flowers and plants","#17694f",["Garden Bouquet"]],
+  ["Fantasy","Magic and mythical worlds","#69418d",["Castle Above the Clouds"]],
+  ["Vehicles","Cars and rides","#af6032",["Classic Coupe"]],
+  ["Characters","Original portraits","#724d91",["The Roller-Skate Hero"]],
+  ["Patterns","Geometric designs","#a6437d",["Sunburst Mandala"]]
 ];
 export function artwork(ctx,book,page){
   function shape(path,paint=true,width=4){
@@ -96,7 +102,7 @@ export function artwork(ctx,book,page){
       shape('M374 172q84 -66 159 0l34 -28v56l-34 -28q-73 68 -159 0z');
       oval(422,167,7);
     }
-  }else{
+  }else if(book===3){
     oval(548,119,65);
     sky.slice(0,3).forEach(a=>star(...a));
     shape('M20 389Q160 355 302 398T700 384V460H20Z');
@@ -122,6 +128,78 @@ export function artwork(ctx,book,page){
       shape('M274 280L313 242L338 290ZM382 288L405 242L444 280Z');
       shape('M274 311Q358 351 447 311Q419 367 361 367Q303 367 274 311Z');
     }
+  }
+  if(book===4){
+    shape('M20 333Q85 302 151 333T281 333T411 333T541 333T699 333V460H20Z');
+    shape('M162 285Q147 213 207 194Q265 181 287 250Q337 252 384 274Q442 266 511 229L493 280L532 290Q484 386 325 391Q204 390 162 285Z');
+    shape('M160 244Q130 258 107 269Q120 289 167 274Z');
+    oval(207,235,8);
+    shape('M267 296Q339 305 414 296Q376 350 310 338Q280 330 267 296Z');
+    for(const x of [77,592,639]) shape('M'+x+' 329v-106m0 89q-22-40-44-43m44 30q20-34 41-42',false,3);
+    for(const x of [108,492,587]) shape('M'+x+' 418q28-13 54 0',false,3);
+  }
+  if(book===5){
+    for(const [x,y] of [[216,178],[360,118],[508,177]]){
+      shape('M'+x+' '+y+'L360 377',false,5);
+      for(let i=0;i<7;i++){
+        const a=i*Math.PI*2/7;
+        ctx.save();ctx.translate(x,y);ctx.rotate(a);oval(39,0,31,18);ctx.restore();
+      }
+      oval(x,y,22);
+    }
+    shape('M355 314Q282 318 249 255Q314 258 355 314Z');
+    shape('M366 312Q426 315 462 251Q401 254 366 312Z');
+    shape('M264 350H456L438 441H282Z');
+    box(252,334,216,24);
+    star(113,122,25);star(598,132,26);
+
+  }
+  if(book===6){
+    oval(552,110,55);
+    [[95,98,17],[222,85,13],[477,58,16],[627,165,26]].forEach(a=>star(...a));
+    box(228,257,264,126);
+    box(294,157,132,226);
+    shape('M275 160L360 69L445 160Z');
+    for(const x of [228,432]){
+      box(x,235,60,148);
+      shape('M'+(x-9)+' 236l39-70 39 70z');
+      oval(x+30,278,12,20);
+    }
+    shape('M333 383v-56q27-48 54 0v56z');
+    shape('M134 404Q138 373 188 379Q208 343 255 371Q279 349 310 378Q357 349 391 378Q433 347 462 370Q513 342 538 380Q586 368 597 406Q577 438 360 439Q168 438 134 404Z');
+  }
+  if(book===7){
+    box(20,369,680,90);
+    shape('M112 310L158 271L218 258Q274 166 382 169Q449 169 510 252L561 264Q602 274 615 335L595 366H117Q92 355 112 310Z');
+    shape('M234 256Q283 189 351 190V256Z M373 190Q440 197 486 256H373Z');
+    oval(195,356,51);oval(535,356,51);oval(195,356,23);oval(535,356,23);
+    oval(131,318,16,11);oval(592,307,16,11);
+    shape('M367 270V347M384 285H418M246 344H481M42 419H143M290 419H429M553 419H674',false,4);
+    star(124,142,25);star(558,123,27);
+  }
+  if(book===8){
+    oval(360,214,91,107);
+    shape('M275 199Q234 125 307 102Q340 62 393 98Q462 91 465 161L444 204Q413 197 404 150Q335 199 275 199Z');
+    shape('M319 227Q336 214 351 227M369 227Q385 213 402 226',false);
+    oval(336,234,6);oval(385,234,6);
+    shape('M337 264Q359 281 386 263Q363 305 337 264Z');
+    shape('M218 417Q239 327 312 306Q360 348 407 306Q481 327 501 417Z');
+    star(360,380,24);star(177,230,25);star(540,223,28);
+    shape('M270 413L286 357M451 413L435 357',false);
+  }
+  if(book===9){
+    for(let ring=0;ring<3;ring++){
+      const count=[16,12,8][ring], radius=[145,111,65][ring], length=[52,36,32][ring];
+      for(let i=0;i<count;i++){
+        ctx.save();
+        ctx.translate(360,240);
+        ctx.rotate((i+ring*.5)*Math.PI*2/count);
+        shape('M'+(radius-length)+' 0Q'+radius+' -39 '+(radius+length)+' 0Q'+radius+' 39 '+(radius-length)+' 0Z');
+        ctx.restore();
+      }
+    }
+    oval(360,240,33);star(360,240,19);
+    [[102,96,34],[617,96,34],[102,383,34],[617,383,34]].forEach(a=>star(...a));
   }
   ctx.restore();
 }
