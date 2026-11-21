@@ -8,28 +8,33 @@ const generatedIndexes=generatedTitles.map((title,i)=>{
   pages.push(title);
   return pages.length-1;
 });
-let sheetPromise;
+const sheetPromises=new Map();
+const upgradedTiles={10:{0:6,6:7},11:{6:8,10:9}};
 const generatedPreviews=new Map();
 function generatedTile(book,page){
-  return book>=4&&generatedIndexes[book-4]===page?book-4:-1;
+  return upgradedTiles[book]?.[page]??(book>=4&&generatedIndexes[book-4]===page?book-4:-1);
 }
-function loadArtSheet(){
-  if(!sheetPromise){
+function loadArtSheet(tile){
+  const upgraded=tile>=6;
+  if(!sheetPromises.has(upgraded)){
     const sheet=new Image();
-    sheet.src='./pages/illustrated-collection.png';
-    sheetPromise=sheet.decode().then(()=>sheet).catch(error=>{sheetPromise=null;throw error;});
+    sheet.src=upgraded?'./pages/zen-seasons-art.png':'./pages/illustrated-collection.png';
+    const pending=sheet.decode().then(()=>sheet).catch(error=>{sheetPromises.delete(upgraded);throw error;});
+    sheetPromises.set(upgraded,pending);
   }
-  return sheetPromise;
+  return sheetPromises.get(upgraded);
 }
 function paintGeneratedTile(ctx,sheet,tile,size){
-  const w=sheet.naturalWidth/3,h=sheet.naturalHeight/2;
+  const columns=tile>=6?2:3;
+  const index=tile>=6?tile-6:tile;
+  const w=sheet.naturalWidth/columns,h=sheet.naturalHeight/2;
   const margin=size*.035;
   ctx.fillStyle='#fff';
   ctx.fillRect(0,0,size,size);
-  ctx.drawImage(sheet,(tile%3)*w,Math.floor(tile/3)*h,w,h,margin,margin,size-2*margin,size-2*margin);
+  ctx.drawImage(sheet,(index%columns)*w,Math.floor(index/columns)*h,w,h,margin,margin,size-2*margin,size-2*margin);
 }
 function previewGeneratedTile(target,tile){
-  loadArtSheet().then(sheet=>{
+  loadArtSheet(tile).then(sheet=>{
     if(!generatedPreviews.has(tile)){
       const thumbnail=document.createElement('canvas');
       thumbnail.width=thumbnail.height=220;
@@ -100,6 +105,8 @@ books.forEach(([name,character,tint],i)=>{
     front.src=print[0];
     front.onerror=()=>front.remove();
     cover.append(front);
+  }else if(upgradedTiles[i]){
+    previewGeneratedTile(image,i===10?6:8);
   }else if(i>=4 && i<4+generatedIndexes.length){
     previewGeneratedTile(image,i-4);
   }else if(original){
@@ -115,7 +122,7 @@ books.forEach(([name,character,tint],i)=>{
   button.style.setProperty('--tint',tint);
   button.append(cover,label,credit);
   button.onclick=()=>{
-    open(i,generatedIndexes[i-4]??firstIllustration(i));
+    open(i,i===11?6:generatedIndexes[i-4]??firstIllustration(i));
     $('studio').scrollIntoView();
   };
   const card=document.createElement('article');
@@ -230,7 +237,7 @@ async function open(nextBook,nextPage,remember=true){
     status('Opening '+title()+'…');
     const tile=generatedTile(book,page);
     try{
-      const sheet=await loadArtSheet();
+      const sheet=await loadArtSheet(tile);
       if(request!==importId) return;
       fitPaper(650,650);
       paintGeneratedTile(ctx,sheet,tile,650);
@@ -565,10 +572,10 @@ async function setupXR(){
   board.position.set(0,.12,-1.85);
   desk.add(board);
   const brush=new THREE.Group();
-  const handle=new THREE.MeshStandardMaterial({color:0x973ae1,roughness:.28,metalness:.2});
-  const gold=new THREE.MeshStandardMaterial({color:0xe9b66a,roughness:.27,metalness:.7});
-  const bristles=new THREE.MeshStandardMaterial({color:0xe2b68a,roughness:.82});
-  const paint=new THREE.MeshStandardMaterial({color:0x42e3c4,roughness:.3});
+  const handle=new THREE.MeshStandardMaterial({color:0x673620,roughness:.36,metalness:.04});
+  const gold=new THREE.MeshStandardMaterial({color:0xd7b38b,roughness:.22,metalness:.66});
+  const bristles=new THREE.MeshStandardMaterial({color:0xb6804f,roughness:.87});
+  const paint=new THREE.MeshStandardMaterial({color:0x26977e,roughness:.39});
   function brushSection(profile,surface){
     const points=profile.map(([radius,y])=>new THREE.Vector2(radius,y));
     const mesh=new THREE.Mesh(new THREE.LatheGeometry(points,48),surface);
@@ -586,7 +593,15 @@ async function setupXR(){
     seam.position.y=y;
     brush.add(seam);
   }
-  brush.rotation.z=-.66;
+  for(let i=0;i<48;i++){
+    const angle=i*Math.PI/24;
+    const strand=new THREE.BufferGeometry().setFromPoints([
+      [.226,.773],[.263,.85],[.258,.99],[.218,1.14],[.144,1.29]
+    ].map(([radius,y])=>new THREE.Vector3(Math.cos(angle)*radius,y,Math.sin(angle)*radius*.66)));
+    brush.add(new THREE.Line(strand,new THREE.LineBasicMaterial({color:i%3?0x765138:0xf3d0a5,transparent:true,opacity:.48})));
+  }
+  brush.scale.setScalar(.81);
+  brush.rotation.z=-.69;
   brush.position.z=.3;
   orbit.add(brush);
   scene.add(new THREE.HemisphereLight(0xffe5ff,0x62467d,2.3));

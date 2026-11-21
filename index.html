@@ -117,8 +117,19 @@ header nav a{color:#f3e7fc;text-underline-offset:4px}
 .paper.is-zoomed,.room-paper.is-zoomed{display:block;overflow:auto;max-height:76vh}
 .paper.is-zoomed canvas,.room-paper.is-zoomed canvas{max-width:none;max-height:none;margin:0 auto}
 @media(max-width:780px){.studio>.tools,.studio>.canvas-zoom,.studio>.paper{grid-column:1;grid-row:auto}.studio>.canvas-zoom{justify-content:flex-start}}
+
+#community [hidden]{display:none}
+.community-nav{gap:12px;margin:12px 0}.community-grid,.community-posts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:14px 0}
+.community-grid>section,.community-posts>article{border:1px solid #ae8a6a72;border-radius:12px;background:#21182c;padding:15px;overflow-wrap:anywhere}
+.community-form{display:grid;gap:9px;max-width:580px;margin:12px 0}.community-form label{display:grid;gap:4px}
+.community-form :is(input,textarea){font:inherit;color:#fff5e9;background:#171326;border:1px solid #8a7399;border-radius:7px;padding:8px;min-width:0;max-width:100%}
+.community-form>button{justify-self:start}.community-posts img{width:100%;max-height:340px;object-fit:contain;background:#fff5ea;border-radius:6px}
+.community-posts h4{margin:6px 0}.community-posts p{white-space:pre-wrap}
+#community-groups article,#community-members article{padding:10px 0;border-bottom:1px solid #74608766}
+#artist-feed,#artist-blog{margin-top:25px}#community-status:empty{display:none}
+@media(max-width:650px){.community-grid,.community-posts{grid-template-columns:1fr}}
 </style></head>
-<body><header><strong>PENGAME PUBLISHING</strong><nav class="row"><a href="#worlds">Create together</a><a href="#gallery-title">My gallery</a></nav><div class="music-controls"><button type="button" id="music-toggle" aria-pressed="false">♫ Play music</button><label>Volume <input type="range" id="music-volume" min="0" max="100" value="38"></label><span id="music-status" role="status"></span></div></header><main>
+<body><header><strong>PENGAME PUBLISHING</strong><nav class="row"><a href="#worlds">Create together</a><a href="#gallery-title">My gallery</a><a href="#community">Community</a></nav><div class="music-controls"><button type="button" id="music-toggle" aria-pressed="false">♫ Play music</button><label>Volume <input type="range" id="music-volume" min="0" max="100" value="38"></label><span id="music-status" role="status"></span></div></header><main>
 <section class="hero"><div><div class="eyebrow">The Coloring Odyssey Collection</div><h1>Coloring<br><em>Odyssey</em></h1><p>Follow Hue’s magic pen through New York, explore space with Carl, and dive beneath the waves with Dr. Janice Miller.</p><div class="row"><a class="primary" href="#studio">Start coloring</a><button id="vr" disabled><span class="tool-icon" aria-hidden="true">◇</span>Enter VR</button></div><p id="xr-status" role="status">Checking VR support…</p></div><div class="stage" id="stage" aria-hidden="true"></div></section>
 <section id="worlds" class="gallery-exhibit"><h2>Create Together</h2>
 <div class="world-cards">
@@ -144,4 +155,50 @@ header nav a{color:#f3e7fc;text-underline-offset:4px}
 <label>Import a book PDF or line-art image <input id="import" type="file" accept="application/pdf,.pdf,image/png,image/jpeg,image/webp" style="max-width:100%"></label>
 <div class="row" id="pdf-controls" hidden style="display:none"><button id="pdf-prev" type="button" aria-label="Previous PDF page">←</button><span id="pdf-count"></span><button id="pdf-next" type="button" aria-label="Next PDF page">→</button></div><div id="status" role="status" aria-live="polite"></div></div><div class="row canvas-zoom" data-canvas-zoom="paper" role="group" aria-label="Canvas zoom"><button type="button" data-zoom-out aria-label="Zoom out" disabled>−</button><button type="button" data-zoom-reset aria-label="Reset zoom">100%</button><button type="button" data-zoom-in aria-label="Zoom in">+</button></div><div class="paper"><canvas id="paper" width="720" height="480" aria-label="Coloring page"></canvas></div></div></section>
 <section class="gallery-exhibit"><h2 id="gallery-title">My gallery</h2><p id="gallery-status" role="status"></p><div class="gallery" id="gallery"></div></section>
-</main><footer><a href="https://pengamepublishing.com/">PenGame Publishing</a></footer><script type="module" src="./app.js?v=zen-seasons-1"></script><script type="module" src="./ambient-music.js?v=1"></script><script type="module" src="./canvas-zoom.js?v=1"></script></body></html>
+<section id="community" class="gallery-exhibit">
+<h2>Artist Community</h2>
+<div class="row community-nav">
+<a href="#member-portal">Member portal</a><a href="#artist-groups">Groups</a><a href="#artist-feed">Art feed</a><a href="#artist-blog">Artist blog</a>
+<button id="share-odyssey" type="button">Share Coloring Odyssey</button>
+</div>
+<p id="community-status" role="status"></p>
+<div class="community-grid">
+<section id="member-portal"><h3>Member portal</h3>
+<form id="community-auth" class="community-form">
+<label>Email <input name="email" type="email" autocomplete="email" required></label>
+<label>Password <input name="password" type="password" autocomplete="current-password" minlength="8" required></label>
+<div class="row"><button type="submit" value="signin">Sign in</button><button type="submit" value="signup">Create account</button></div>
+</form>
+<form id="community-profile" class="community-form" hidden>
+<p>Display name and bio are public.</p>
+<label>Display name <input name="name" minlength="2" maxlength="60" required></label>
+<label>Bio <textarea name="bio" maxlength="450" rows="3"></textarea></label>
+<div class="row"><button>Save profile</button><button type="button" id="community-signout">Sign out</button></div>
+</form>
+<details><summary>Artist directory</summary><div id="community-members"></div></details>
+</section>
+<section id="artist-groups"><h3>Groups</h3>
+<form id="community-group" class="community-form" hidden>
+<label>Group name <input name="name" minlength="2" maxlength="65" required></label>
+<label>Description <textarea name="description" maxlength="450" rows="2"></textarea></label>
+<button>Create a public group</button></form>
+<div id="community-groups"></div>
+</section>
+</div>
+<section id="artist-feed"><h3>Art feed</h3>
+<form id="community-post" class="community-form" hidden>
+<div class="row"><label>Post type <select name="kind"><option value="art">Artwork</option><option value="blog">Blog entry</option></select></label><label>Audience <select name="group"><option value="">Community</option></select></label></div>
+<label>Title <input name="title" minlength="2" maxlength="95" required></label>
+<label>Caption or article <textarea name="body" rows="4" maxlength="5000"></textarea></label>
+<label>Artwork image <input name="image" type="file" accept="image/png,image/jpeg,image/webp"></label>
+<button>Publish publicly</button>
+</form>
+<p id="community-feed-filter" class="row"></p>
+<div id="community-art" class="community-posts"></div>
+</section>
+<section id="artist-blog"><h3>Artist Blog</h3>
+<div class="community-posts">
+<article><h4>Build a palette around one color</h4><p>Choose a favorite color, then add a lighter tint, a darker shade, and one accent. Try the accent in just a few small areas to draw attention to the part of the page you like best.</p></article>
+<article><h4>Make a coloring session your own</h4><p>Start with the largest shapes, then zoom in for the details. In a friend room, take turns choosing colors or agree on a palette before you begin. Save a copy when you find a combination you love.</p></article>
+</div><div id="community-blog" class="community-posts"></div></section>
+</section></main><footer><a href="https://pengamepublishing.com/">PenGame Publishing</a></footer><script type="module" src="./app.js?v=artist-community-1"></script><script type="module" src="./ambient-music.js?v=1"></script><script type="module" src="./canvas-zoom.js?v=1"></script><script type="module" src="./community.js?v=1"></script></body></html>
