@@ -43,6 +43,38 @@ export function drawCalmPage(ctx,theme,page){
   box(24,24,672,432);
   const variation=page%3;
   const group=Math.floor(page/3);
+  const stone=(x,y,w,h,tilt=0)=>{
+    ctx.save();
+    ctx.translate(x,y);
+    ctx.rotate(tilt);
+    outline(`M${-.95*w} ${.32*h}C${-1.18*w} ${-.2*h} ${-.61*w} ${-.9*h} ${-.18*w} ${-.97*h}C${.28*w} ${-1.04*h} ${.8*w} ${-.73*h} ${.98*w} ${-.26*h}Q${1.17*w} ${.35*h} ${.74*w} ${.69*h}Q${.08*w} ${1.02*h} ${-.63*w} ${.78*h}Q${-.88*w} ${.68*h} ${-.95*w} ${.32*h}Z`);
+    outline(`M${-.86*w} ${.04*h}Q${-.37*w} ${.25*h} ${.08*w} ${-.08*h}T${.88*w} ${-.05*h}L${.9*w} ${.17*h}Q${.56*w} ${-.03*h} ${.06*w} ${.16*h}T${-.88*w} ${.25*h}Z`);
+    ctx.restore();
+  };
+  if(theme==='zen'&&group===1){
+    if(variation===0){
+      ellipse(150,119,49);
+      outline('M24 298L134 185L202 229L290 148L435 277L511 176L696 293V456H24Z');
+      outline('M24 373Q194 289 368 361T696 366V456H24Z');
+      for(const [x,y,w,h,tilt] of [[360,385,123,33,.04],[368,336,91,29,-.07],[346,291,70,25,.09],[372,249,49,23,-.13]]) stone(x,y,w,h,tilt);
+      for(const [x,y,w,h] of [[119,394,40,16],[550,403,44,18],[603,378,28,14]]) stone(x,y,w,h);
+    }else if(variation===1){
+      ellipse(360,130,72);
+      for(const [x,y,r] of [[92,96,8],[185,159,9],[529,119,11],[619,164,8],[569,70,6]]) jewel(x,y,r);
+      outline('M24 319L184 237L261 280L397 219L543 279L696 235V456H24Z');
+      for(const r of [182,151,117]) ellipse(360,390,r,r*.24);
+      for(const [x,y,w,h,tilt] of [[357,370,101,32,-.07],[378,322,76,28,.12],[354,278,51,24,-.1],[372,240,32,21,.24]]) stone(x,y,w,h,tilt);
+    }else{
+      outline('M211 24H459Q548 94 472 167Q319 258 437 333Q570 398 513 456H233Q308 379 208 323Q89 255 202 173Q317 86 211 24Z');
+      outline('M255 24H293Q386 92 250 181Q150 251 256 321Q356 386 269 456H251Q332 379 230 319Q118 254 224 177Q344 91 255 24Z');
+      outline('M407 24H432Q517 98 443 165Q295 253 412 335Q524 409 480 456H455Q502 404 389 330Q270 250 421 163Q490 96 407 24Z');
+      const pebbles=[[321,80,40,19,.24],[389,129,38,17,-.38],[288,159,43,19,-.18],[240,224,31,21,.32],[322,238,47,22,-.18],[261,282,37,18,.19],[352,308,50,23,.4],[405,369,42,19,-.35],[331,418,32,16,.16],[434,425,37,17,-.24]];
+      for(const [x,y,w,h,tilt] of pebbles) stone(x,y,w,h,tilt);
+      for(const [x,y] of [[91,118],[609,139],[595,326],[103,379]]) bloom(x,y,23,6);
+    }
+    ctx.restore();
+    return;
+  }
   if(theme==='zen'&&group===0){
     const count=8+4*variation;
     for(const r of [188,160,119,77]) ellipse(360,240,r);
@@ -61,9 +93,7 @@ export function drawCalmPage(ctx,theme,page){
     ellipse(360+variation*55,115,43);
     hill(330,52+variation*15);
     hill(405,27);
-    if(group===1){
-      for(let i=0;i<5;i++) ellipse(360+Math.sin(i+variation)*23,365-i*40,120-i*19,28-i*2);
-    }else if(group===2){
+    if(group===2){
       outline('M328 347Q390 316 350 251Q289 230 273 190L299 182Q322 221 369 219Q411 194 430 155L456 164Q440 225 395 249Q427 301 389 347Z');
       for(let i=0;i<5;i++) ellipse(270+i*44,162+(i%2)*27+variation*8,43,24);
       outline('M244 336H476L441 415H279Z');

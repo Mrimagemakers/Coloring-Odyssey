@@ -66,7 +66,7 @@ function postCard(post,reacted){
 async function refresh(){
   const request=++refreshId;
   const owner=user?.id;
-  const fields='id,title,body,image,kind,author_id,group_id,artist_profiles(name),artist_reactions(count)';
+  const fields='id,title,body,image,kind,author_id,group_id,artist_profiles!artist_posts_author_id_fkey(name),artist_reactions(count)';
   let art=db.from('artist_posts').select(fields).eq('kind','art');
   if(groupFilter) art=art.eq('group_id',groupFilter);
   const [own,artists,circles,memberships,artwork,blogs,reactions]=await Promise.all([

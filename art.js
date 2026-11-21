@@ -1,4 +1,4 @@
-import {zenPages,seasonPages,drawCalmPage} from './calm-pages.js?v=1';
+import {zenPages,seasonPages,drawCalmPage} from './calm-pages.js?v=2';
 
 export const books=[
   ['Hue’s Got Flow','Hue Davis Jr.','#843291',['The Magic Pen','Midnight Mixtape','The Rooftop Mural']],

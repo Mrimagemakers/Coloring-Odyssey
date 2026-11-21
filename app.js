@@ -1,4 +1,4 @@
-import {books,artwork} from './art.js?v=zen-seasons-1';
+import {books,artwork} from './art.js?v=zen-stones-1';
 import {setupFriendWorlds} from './friend-worlds.js?v=3';
 import {makeVRWorlds} from './vr-worlds.js?v=1';
 import {bookPages} from './book-pages.js';
