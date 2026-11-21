@@ -1,5 +1,7 @@
 import {paintStroke,isUtensil,originalSurface} from './drawing-tools.js?v=1';
 
+import {colorRegion} from './fill-region.js?v=1';
+
 const worlds={
   studio:{title:'Art Studio',sheets:[['Blank canvas'],['The Artist’s Desk',5,0,0],['Butterfly Greenhouse',5,0,1],['Petal Patchwork',9,2,2]]},
   odyssey:{title:'Coloring Odyssey World',sheets:[['Hue’s Skyline Mural',0,2,3],['Carl’s Ringed Planet',1,0,4],['Janice’s Jellyfish Reef',2,0,5]]}
@@ -14,7 +16,7 @@ export function setupFriendWorlds({artwork,buildFillBoundary,saveArtwork,shareAr
   const saveStatus=message=>{$('room-save-status').textContent=message;};
   const guests=new Set(), drafts=new Map();
   let world, sheet=0, boundary, peer, host, id, connecting=false, ready=true, generation=0, revision=0;
-  let tool='brush', stroke, cleanSurface;
+  let tool='brush', stroke, cleanSurface, paperPixels;
   let illustrations;
   const artSheet=new Image();
   artSheet.src='./pages/create-together-illustrations.png';
@@ -42,6 +44,7 @@ export function setupFriendWorlds({artwork,buildFillBoundary,saveArtwork,shareAr
     const original=ctx.getImageData(0,0,width,height);
     boundary=buildFillBoundary(original);
     cleanSurface=originalSurface(original);
+    paperPixels=original.data;
   }
   function controls(){
     $('room-host').hidden=Boolean(id||connecting);
@@ -100,29 +103,8 @@ export function setupFriendWorlds({artwork,buildFillBoundary,saveArtwork,shareAr
   }
 
   function fill(x,y,color){
-    const start=y*width+x;
-    if(boundary[start]) return;
-    const image=ctx.getImageData(0,0,width,height), pixels=image.data;
-    const original=pixels.slice(start*4,start*4+3);
-    const target=color.slice(1).match(/../g).map(hex=>parseInt(hex,16));
-    if(original.every((value,i)=>value===target[i])) return;
-    const queue=new Int32Array(width*height), visited=new Uint8Array(queue.length);
-    let read=0, write=0;
-    function enqueue(i){
-      if(visited[i]||boundary[i]) return;
-      visited[i]=1;
-      if(original.every((value,c)=>Math.abs(value-pixels[i*4+c])<=25)) queue[write++]=i;
-    }
-    enqueue(start);
-    while(read<write){
-      const i=queue[read++], col=i%width;
-      pixels.set(target,i*4);
-      if(col) enqueue(i-1);
-      if(col<width-1) enqueue(i+1);
-      if(i>=width) enqueue(i-width);
-      if(i<queue.length-width) enqueue(i+width);
-    }
-    ctx.putImageData(image,0,0);
+    const image=ctx.getImageData(0,0,width,height);
+    if(colorRegion(image,boundary,paperPixels,x,y,color)) ctx.putImageData(image,0,0);
   }
   function validPoint(p){
     return Array.isArray(p)&&p.length===2&&p.every(Number.isInteger)&&p[0]>=0&&p[0]<width&&p[1]>=0&&p[1]<height;

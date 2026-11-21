@@ -1,10 +1,12 @@
 import {books,artwork} from './art.js?v=distinct-seasons-1';
-import {setupFriendWorlds} from './friend-worlds.js?v=4';
+import {setupFriendWorlds} from './friend-worlds.js?v=5';
 import {makeVRWorlds} from './vr-worlds.js?v=1';
 import {drawZenBorder} from './calm-pages.js?v=4';
 import {paintStroke,originalSurface} from './drawing-tools.js?v=1';
 import {drawCustomPage} from './page-maker.js?v=1';
 import {bookPages} from './book-pages.js';
+
+import {colorRegion} from './fill-region.js?v=1';
 
 const generatedTitles=['Owl and Rabbit','Sunflower Patch','Castle in the Clouds','Camper in the Pines','The Young Engineer','Star Quilt Rosette'];
 const generatedIndexes=generatedTitles.map((title,i)=>{
@@ -14,23 +16,47 @@ const generatedIndexes=generatedTitles.map((title,i)=>{
 });
 const sheetPromises=new Map();
 const upgradedTiles={10:{0:6,6:7}};
+const featuredTiles={10:[0,6]};
+const detailCollections=[
+  [11,8,['Cherry Blossom Footbridge','Snowbound Village']],
+  [7,10,['Roadster at the Diner','Mountain Expedition Camper']],
+  [8,12,['The Muralist','Marine Biologist at Sea']],
+  [9,14,['Art Deco Rosette','Botanical Mandala']]
+];
+for(const [category,tile,titles] of detailCollections){
+  const pages=books[category][3];
+  const first=pages.length;
+  upgradedTiles[category]={};
+  featuredTiles[category]=[first,tile];
+  titles.forEach((title,index)=>{
+    upgradedTiles[category][pages.length]=tile+index;
+    pages.push(title);
+  });
+}
+const artSheets=[
+  {start:0,columns:3,path:'illustrated-collection.png'},
+  {start:6,columns:2,path:'zen-seasons-art.png'},
+  {start:8,columns:2,path:'seasons-vehicles-detail.png'},
+  {start:12,columns:2,path:'characters-patterns-detail.png'}
+];
+const sheetFor=tile=>artSheets.findLast(sheet=>tile>=sheet.start);
 const generatedPreviews=new Map();
 function generatedTile(book,page){
   return upgradedTiles[book]?.[page]??(book>=4&&generatedIndexes[book-4]===page?book-4:-1);
 }
 function loadArtSheet(tile){
-  const upgraded=tile>=6;
-  if(!sheetPromises.has(upgraded)){
+  const {path}=sheetFor(tile);
+  if(!sheetPromises.has(path)){
     const sheet=new Image();
-    sheet.src=upgraded?'./pages/zen-seasons-art.png':'./pages/illustrated-collection.png';
-    const pending=sheet.decode().then(()=>sheet).catch(error=>{sheetPromises.delete(upgraded);throw error;});
-    sheetPromises.set(upgraded,pending);
+    sheet.src='./pages/'+path;
+    const pending=sheet.decode().then(()=>sheet).catch(error=>{sheetPromises.delete(path);throw error;});
+    sheetPromises.set(path,pending);
   }
-  return sheetPromises.get(upgraded);
+  return sheetPromises.get(path);
 }
 function paintGeneratedTile(ctx,sheet,tile,size){
-  const columns=tile>=6?2:3;
-  const index=tile>=6?tile-6:tile;
+  const {columns,start}=sheetFor(tile);
+  const index=tile-start;
   const w=sheet.naturalWidth/columns,h=sheet.naturalHeight/2;
   const zen=tile===6||tile===7;
   const margin=size*(zen?.085:.035);
@@ -66,7 +92,7 @@ let book=0,page=0,mode='fill',history=[],stroke=null,importId=0;
 let updatePreview=()=>{};
 const edits=new Map(), imports=new Map(), pdfs=new Map();
 let loading=false, changed=false;
-let fillBoundary=null, cleanSurface;
+let fillBoundary=null, cleanSurface, originalPixels, designDraft;
 const customPages=new Map();
 let nextCustomPage=-2;
 const snapshot=()=>ctx.getImageData(0,0,canvas.width,canvas.height);
@@ -113,8 +139,8 @@ books.forEach(([name,character,tint],i)=>{
     front.src=print[0];
     front.onerror=()=>front.remove();
     cover.append(front);
-  }else if(upgradedTiles[i]){
-    previewGeneratedTile(image,6);
+  }else if(featuredTiles[i]){
+    previewGeneratedTile(image,featuredTiles[i][1]);
   }else if(i>=4 && i<4+generatedIndexes.length){
     previewGeneratedTile(image,i-4);
   }else if(original){
@@ -130,7 +156,7 @@ books.forEach(([name,character,tint],i)=>{
   button.style.setProperty('--tint',tint);
   button.append(cover,label,credit);
   button.onclick=()=>{
-    open(i,generatedIndexes[i-4]??firstIllustration(i));
+    open(i,featuredTiles[i]?.[0]??generatedIndexes[i-4]??firstIllustration(i));
     $('studio').scrollIntoView();
   };
   const card=document.createElement('article');
@@ -188,7 +214,7 @@ $('page-browser').addEventListener('toggle',()=>{if($('page-browser').open) show
 $('tiles-back').onclick=()=>{browseOffset-=browseSize;showPageTiles();};
 $('tiles-forward').onclick=()=>{browseOffset+=browseSize;showPageTiles();};
 function rememberArtwork(){
-  if(!loading && changed) edits.set(key(),snapshot());
+  if(!loading && !designDraft && changed) edits.set(key(),snapshot());
 }
 function fitPaper(width,height){
   if(canvas.width===width && canvas.height===height) return;
@@ -200,10 +226,12 @@ function setLoading(value){
   $('save').disabled=value;
   $('download').disabled=value;
   $('share').disabled=value;
+  $('design-edit').disabled=value;
   canvas.setAttribute('aria-busy',String(value));
 }
 async function open(nextBook,nextPage,remember=true){
   const request=++importId;
+  if(designDraft) closeDesign();
   if(remember) rememberArtwork();
   changed=false;
   book=nextBook;
@@ -239,8 +267,14 @@ async function open(nextBook,nextPage,remember=true){
   setLoading(false);
   const original=sourcePage(book,page);
   if(customPages.has(page)){
-    fitPaper(720,480);
-    drawCustomPage(ctx,customPages.get(page));
+    const custom=customPages.get(page);
+    if(custom.pixels){
+      fitPaper(custom.pixels.width,custom.pixels.height);
+      ctx.putImageData(custom.pixels,0,0);
+    }else{
+      fitPaper(720,480);
+      drawCustomPage(ctx,custom);
+    }
   }else if(imported){
     fitPaper(imported.width,imported.height);
     ctx.putImageData(imported,0,0);
@@ -251,8 +285,9 @@ async function open(nextBook,nextPage,remember=true){
     try{
       const sheet=await loadArtSheet(tile);
       if(request!==importId) return;
-      fitPaper(650,650);
-      paintGeneratedTile(ctx,sheet,tile,650);
+      const size=tile>=8?850:650;
+      fitPaper(size,size);
+      paintGeneratedTile(ctx,sheet,tile,size);
       setLoading(false);
     }catch{
       if(request===importId) status('Could not open this page. Choose another page or try again.');
@@ -277,7 +312,7 @@ async function open(nextBook,nextPage,remember=true){
     fitPaper(720,480);
     artwork(ctx,book,page);
   }
-  const originalPixels=snapshot();
+  originalPixels=snapshot();
   fillBoundary=buildFillBoundary(originalPixels);
   cleanSurface=originalSurface(originalPixels);
   if(edit) ctx.putImageData(edit,0,0);
@@ -351,48 +386,69 @@ function buildFillBoundary({data,width,height}){
   return boundary;
 }
 function fill(x,y){
-  if(loading) return;
-  const {width,height}=canvas;
-  const start=Math.max(0,Math.min(width-1,Math.floor(x)))+width*Math.max(0,Math.min(height-1,Math.floor(y)));
-  if(!fillBoundary || fillBoundary[start]) return;
-  const image=snapshot(), pixels=image.data;
-  const original=pixels.slice(start*4,start*4+3);
-  const color=$('color').value.slice(1).match(/../g).map(hex=>parseInt(hex,16));
-  if(original.every((value,i)=>value===color[i])) return;
+  if(loading||designDraft||!originalPixels) return;
+  const image=snapshot();
+  if(!colorRegion(image,fillBoundary,originalPixels.data,x,y,$('color').value)) return;
   checkpoint();
-  const queue=new Int32Array(width*height), seen=new Uint8Array(width*height);
-  let first=0,last=0;
-  function add(i){
-    if(seen[i] || fillBoundary[i]) return;
-    seen[i]=1;
-    if(original.every((value,c)=>Math.abs(value-pixels[i*4+c])<=25)) queue[last++]=i;
-  }
-  add(start);
-  while(first<last){
-    const i=queue[first++], col=i%width;
-    pixels.set(color,i*4);
-    if(col) add(i-1);
-    if(col<width-1) add(i+1);
-    if(i>=width) add(i-width);
-    if(i<width*(height-1)) add(i+width);
-  }
   ctx.putImageData(image,0,0);
   refresh();
 }
+function showDesignControls(editing){
+  $('design-actions').hidden=!editing;
+  $('design-edit').hidden=editing;
+  for(const id of ['fill','brush','utensil','save','share','download','import']) $(id).disabled=editing;
+}
+function closeDesign(){
+  const previous=designDraft;
+  designDraft=null;
+  stroke=null;
+  ctx.putImageData(previous.painted,0,0);
+  history=previous.history;
+  changed=previous.changed;
+  $('undo').disabled=!history.length;
+  showDesignControls(false);
+  refresh();
+}
+$('design-edit').onclick=()=>{
+  if(loading||!originalPixels) return;
+  designDraft={painted:snapshot(),history,changed};
+  stroke=null;
+  history=[];
+  ctx.putImageData(originalPixels,0,0);
+  $('undo').disabled=true;
+  showDesignControls(true);
+  status('Draw new outlines or erase sections. Save a design copy when ready.');
+  refresh();
+};
+$('design-cancel').onclick=()=>{
+  closeDesign();
+  status('Returned to your coloring page.');
+};
+$('design-save').onclick=()=>{
+  const pixels=snapshot();
+  const name=(title()??'Coloring page')+' · Edited';
+  const index=nextCustomPage--;
+  customPages.set(index,{book,name,pixels});
+  closeDesign();
+  open(book,index);
+  status('Design copy created. Fill now follows your edited outlines.');
+};
 function point(event){
   const rect=canvas.getBoundingClientRect();
   return {x:(event.clientX-rect.left)*canvas.width/rect.width,y:(event.clientY-rect.top)*canvas.height/rect.height};
 }
 function draw(from,to){
   paintStroke(ctx,[from.x,from.y],[to.x,to.y],{
-    size:Number($('size').value),color:$('color').value,utensil:$('utensil').value,original:cleanSurface
+    size:Number($('size').value),
+    color:designDraft?($('design-tool').value==='erase'?'#ffffff':'#182334'):$('color').value,
+    utensil:designDraft?'brush':$('utensil').value,original:cleanSurface
   });
   refresh();
 }
 canvas.onpointerdown=event=>{
   if(event.button!==0 || stroke || loading) return;
   const at=point(event);
-  if(mode==='fill'){fill(at.x,at.y);return;}
+  if(mode==='fill'&&!designDraft){fill(at.x,at.y);return;}
   checkpoint();
   canvas.setPointerCapture(event.pointerId);
   stroke={id:event.pointerId,at};
