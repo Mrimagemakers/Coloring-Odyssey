@@ -1,6 +1,7 @@
 import {books,artwork} from './art.js?v=distinct-seasons-1';
-import {setupFriendWorlds} from './friend-worlds.js?v=5';
-import {makeVRWorlds} from './vr-worlds.js?v=1';
+import {setupFriendWorlds} from './friend-worlds.js?v=6';
+import {makeVRWorlds} from './vr-worlds.js?v=2';
+import {bookAllowed,showShopLinks} from './player-mode.js?v=1';
 import {drawZenBorder} from './calm-pages.js?v=4';
 import {paintStroke,originalSurface} from './drawing-tools.js?v=1';
 import {drawCustomPage} from './page-maker.js?v=1';
@@ -141,6 +142,7 @@ thumbnails.width=720;
 thumbnails.height=480;
 const printEditions=[["./covers/hues-got-flow.jpg","B0CFDKNZXZ"],["./covers/cosmic-coloring.jpg","B0CJ4FMXJN"],["./covers/underwater-adventure.jpg","B0CJ4KN1B2"],["./covers/halloween-haunts.jpg","B0CKS6DVFM"]];
 books.forEach(([name,character,tint],i)=>{
+  if(!bookAllowed(name)) return;
   artwork(thumbnails.getContext('2d'),i,0);
   const button=document.createElement('button'), image=new Image(), label=document.createElement('strong'), credit=document.createElement('small');
   image.src=thumbnails.toDataURL();
@@ -185,7 +187,7 @@ books.forEach(([name,character,tint],i)=>{
   const card=document.createElement('article');
   card.className='collection-card';
   card.append(button);
-  if(print){
+  if(print&&showShopLinks){
     const buy=document.createElement('a');
     buy.className='buy-book';
     buy.href='https://www.amazon.com/dp/'+print[1];

@@ -1,3 +1,5 @@
+import {coverAllowed} from './player-mode.js?v=1';
+
 export function makeVRWorlds(THREE,scene){
   const gallery=new THREE.Group(), garden=new THREE.Group();
   const material=(color,metalness=0)=>new THREE.MeshStandardMaterial({color,metalness,roughness:.65});
@@ -26,6 +28,7 @@ export function makeVRWorlds(THREE,scene){
   const frameGeometry=new THREE.BoxGeometry(.98,1.24,.08);
   const coverGeometry=new THREE.PlaneGeometry(.85,1.1);
   editions.forEach((edition,index)=>{
+    if(!coverAllowed(edition)) return;
     const x=(index-1.5)*1.55+Math.sign(index-1.5)*.68;
     mesh(gallery,frameGeometry,brass,x,.64,-5.22);
     const cover=mesh(gallery,coverGeometry,new THREE.MeshBasicMaterial({color:0xc1a789}),x,.64,-5.166);
