@@ -5,6 +5,7 @@ import {drawZenBorder} from './calm-pages.js?v=4';
 import {paintStroke,originalSurface} from './drawing-tools.js?v=1';
 import {drawCustomPage} from './page-maker.js?v=1';
 import {bookPages} from './book-pages.js';
+import {categoryPages} from './category-pages.js?v=1';
 
 import {colorRegion} from './fill-region.js?v=1';
 
@@ -32,6 +33,26 @@ for(const [category,tile,titles] of detailCollections){
     upgradedTiles[category][pages.length]=tile+index;
     pages.push(title);
   });
+}
+// High-resolution featured pages (see category-pages.js), appended after the existing studio pages.
+const featuredPages={};
+for(const [category,{folder,titles}] of Object.entries(categoryPages)){
+  const pages=books[category][3];
+  featuredPages[category]={};
+  titles.forEach((title,index)=>{
+    featuredPages[category][pages.length]='./pages/categories/'+folder+'/'+String(index+1).padStart(2,'0');
+    pages.push(title);
+  });
+}
+const featuredPage=(book,page)=>featuredPages[book]?.[page];
+const firstFeatured=book=>{
+  const first=Object.keys(featuredPages[book]??{})[0];
+  return first===undefined?undefined:Number(first);
+};
+// Featured pages lead the page grid and the page menu; everything else keeps its order.
+function pageOrder(book){
+  const all=[...Array(pageCount(book)).keys()];
+  return [...all.filter(index=>featuredPage(book,index)),...all.filter(index=>!featuredPage(book,index))];
 }
 const artSheets=[
   {start:0,columns:3,path:'illustrated-collection.png'},
@@ -139,6 +160,8 @@ books.forEach(([name,character,tint],i)=>{
     front.src=print[0];
     front.onerror=()=>front.remove();
     cover.append(front);
+  }else if(firstFeatured(i)!==undefined){
+    image.src=featuredPage(i,firstFeatured(i))+'-thumb.webp';
   }else if(featuredTiles[i]){
     previewGeneratedTile(image,featuredTiles[i][1]);
   }else if(i>=4 && i<4+generatedIndexes.length){
@@ -156,7 +179,7 @@ books.forEach(([name,character,tint],i)=>{
   button.style.setProperty('--tint',tint);
   button.append(cover,label,credit);
   button.onclick=()=>{
-    open(i,featuredTiles[i]?.[0]??generatedIndexes[i-4]??firstIllustration(i));
+    open(i,firstFeatured(i)??featuredTiles[i]?.[0]??generatedIndexes[i-4]??firstIllustration(i));
     $('studio').scrollIntoView();
   };
   const card=document.createElement('article');
@@ -180,12 +203,14 @@ let browseOffset=0;
 function showPageTiles(){
   const names=books[book][3];
   const total=pageCount(book);
+  const order=pageOrder(book);
   const limit=Math.min(browseOffset+browseSize,total);
   $('tile-count').textContent=(browseOffset+1)+'–'+limit+' of '+total;
   $('tiles-back').disabled=browseOffset===0;
   $('tiles-forward').disabled=limit===total;
   const tiles=[];
-  for(let index=browseOffset;index<limit;index++){
+  for(let position=browseOffset;position<limit;position++){
+    const index=order[position];
     const button=document.createElement('button');
     button.type='button';
     const label=document.createElement('span');
@@ -196,7 +221,9 @@ function showPageTiles(){
     preview.alt='';
     preview.loading='lazy';
     const tile=generatedTile(book,index);
-    if(tile>=0){
+    if(featuredPage(book,index)){
+      preview.src=featuredPage(book,index)+'-thumb.webp';
+    }else if(tile>=0){
       previewGeneratedTile(preview,tile);
     }else if(number){
       preview.src=bookPageUrl(book,number);
@@ -243,7 +270,13 @@ async function open(nextBook,nextPage,remember=true){
   const options=pages.map((label,i)=>new Option(label,i));
   const groups=[document.createElement('optgroup')];
   groups[0].label='Studio designs';
-  groups[0].append(...options);
+  groups[0].append(...options.filter((_,i)=>!featuredPage(book,i)));
+  if(firstFeatured(book)!==undefined){
+    const featured=document.createElement('optgroup');
+    featured.label='Featured pages';
+    featured.append(...options.filter((_,i)=>featuredPage(book,i)));
+    groups.unshift(featured);
+  }
   if(collections[book].length){
     const originals=document.createElement('optgroup');
     originals.label='Original book pages';
@@ -254,7 +287,7 @@ async function open(nextBook,nextPage,remember=true){
   if(imports.has(book)) $('pages').append(new Option(imports.get(book).name,-1));
   for(const [index,custom] of customPages) if(custom.book===book) $('pages').append(new Option(custom.name,index));
   $('pages').value=page;
-  browseOffset=Math.floor(Math.max(0,page)/browseSize)*browseSize;
+  browseOffset=Math.floor(Math.max(0,pageOrder(book).indexOf(page))/browseSize)*browseSize;
   if($('page-browser').open) showPageTiles();
   updatePdfControls();
   [...$('books').querySelectorAll('.collection-card > button')].forEach((button,i)=>button.setAttribute('aria-pressed',i===book));
@@ -278,6 +311,23 @@ async function open(nextBook,nextPage,remember=true){
   }else if(imported){
     fitPaper(imported.width,imported.height);
     ctx.putImageData(imported,0,0);
+  }else if(featuredPage(book,page)){
+    setLoading(true);
+    status('Opening '+title()+'…');
+    const art=new Image();
+    art.src=featuredPage(book,page)+'.webp';
+    try{
+      await art.decode();
+      if(request!==importId) return;
+      fitPaper(art.naturalWidth,art.naturalHeight);
+      ctx.fillStyle='#fff';
+      ctx.fillRect(0,0,art.naturalWidth,art.naturalHeight);
+      ctx.drawImage(art,0,0);
+      setLoading(false);
+    }catch{
+      if(request===importId) status('Could not open this page. Choose another page or try again.');
+      return;
+    }
   }else if(generatedTile(book,page)>=0){
     setLoading(true);
     status('Opening '+title()+'…');
