@@ -2,20 +2,26 @@ const button=document.getElementById('music-toggle');
 const volume=document.getElementById('music-volume');
 const status=document.getElementById('music-status');
 const volumeKey='coloring-odyssey-music-volume';
-const chords=[
+const trackPicker=document.getElementById('music-track');
+const trackKey='coloring-odyssey-music-track';
+const tracks=[{chords:[
   [45,52,59,60,64],
   [41,48,55,57,60],
   [48,55,62,64,67],
   [43,50,57,59,62]
-];
-const phrase=[
+],phrase:[
   [1.25,3],[3.75,4],[7.25,2],[9.5,3]
+],length:12,type:'sine',octave:12},
+  {chords:[[50,57,60,64,69],[46,53,57,60,65],[48,55,59,62,67],[45,52,55,60,64]],phrase:[[2,4],[6,2],[9,3]],length:14,type:'sine',octave:0},
+  {chords:[[43,50,54,57,62],[47,54,57,61,66],[40,47,50,54,59],[45,52,55,59,64]],phrase:[[.8,2],[3.4,4],[6.8,3]],length:10,type:'triangle',octave:12},
+  {chords:[[48,55,59,62,67],[45,52,56,59,64],[41,48,52,55,60],[43,50,53,57,62]],phrase:[[2.8,4],[5.6,3],[10.2,4],[13.1,2]],length:16,type:'sine',octave:7}
 ];
-const chordLength=12;
 let context,master,timer,suspendTimer,nextChord=0,chordIndex=0,playing=false,busy=false;
 const voices=new Set();
 
 try{
+  const selected=localStorage.getItem(trackKey);
+  if(selected!==null&&tracks[Number(selected)]) trackPicker.value=selected;
   const saved=localStorage.getItem(volumeKey);
   if(saved!==null&&/^\d+$/.test(saved)&&Number(saved)<=100) volume.value=saved;
 }catch{}
@@ -43,16 +49,17 @@ function tone(note,start,hold,attack,release,amplitude,type){
   oscillator.stop(start+hold+release+.05);
 }
 function schedule(){
+  const track=tracks[Number(trackPicker.value)];
   if(nextChord<context.currentTime) nextChord=context.currentTime+.08;
   while(nextChord<context.currentTime+2){
-    const chord=chords[chordIndex%chords.length];
+    const chord=track.chords[chordIndex%track.chords.length];
     chord.forEach((note,index)=>{
-      tone(note,nextChord+index*.16,9.5,2.2,4.2,index===0?.105:.045,'sine');
+      tone(note,nextChord+index*.16,track.length-2.5,2.2,4.2,index===0?.105:.045,'sine');
     });
-    phrase.forEach(([offset,index])=>{
-      tone(chord[index]+12,nextChord+offset,1.1,.19,2.5,.035,'sine');
+    track.phrase.forEach(([offset,index])=>{
+      tone(chord[index]+track.octave,nextChord+offset,1.1,.19,2.5,track.type==='triangle'?.022:.035,track.type);
     });
-    nextChord+=chordLength;
+    nextChord+=track.length;
     chordIndex++;
   }
 }
@@ -87,6 +94,7 @@ button.addEventListener('click',async()=>{
     }
     await context.resume();
     for(const voice of voices) voice.stop();
+    chordIndex=0;
     nextChord=context.currentTime+.06;
     master.gain.setTargetAtTime(level(),context.currentTime,.18);
     playing=true;
@@ -103,4 +111,17 @@ button.addEventListener('click',async()=>{
 volume.addEventListener('input',()=>{
   try{localStorage.setItem(volumeKey,volume.value);}catch{}
   if(playing) master.gain.setTargetAtTime(level(),context.currentTime,.06);
+});
+
+trackPicker.addEventListener('change',()=>{
+  try{localStorage.setItem(trackKey,trackPicker.value);}catch{}
+  if(!playing) return;
+  const now=context.currentTime;
+  master.gain.cancelScheduledValues(now);
+  master.gain.setTargetAtTime(0,now,.06);
+  for(const voice of voices) voice.stop(now+.25);
+  chordIndex=0;
+  nextChord=now+.3;
+  master.gain.setTargetAtTime(level(),now+.3,.2);
+  schedule();
 });

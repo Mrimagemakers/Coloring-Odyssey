@@ -1,5 +1,6 @@
 import {books,artwork} from './art.js?v=zen-seasons-1';
 import {setupFriendWorlds} from './friend-worlds.js?v=3';
+import {makeVRWorlds} from './vr-worlds.js?v=1';
 import {bookPages} from './book-pages.js';
 
 const generatedTitles=['Owl and Rabbit','Sunflower Patch','Castle in the Clouds','Camper in the Pines','The Young Engineer','Star Quilt Rosette'];
@@ -550,6 +551,8 @@ async function setupXR(){
   stage.append(renderer.domElement);
   const scene=new THREE.Scene(), camera=new THREE.PerspectiveCamera(48,1,.01,30);
   const orbit=new THREE.Group(), desk=new THREE.Group();
+  const worldPicker=$('vr-world');
+  const setWorld=makeVRWorlds(THREE,scene);
   scene.add(orbit,desk);
   desk.visible=false;
   function pageTexture(){
@@ -647,6 +650,10 @@ async function setupXR(){
     open(nextBook,firstIllustration(nextBook));
   });
   control('Exit','#35476e',.51,-.7,.22,()=>renderer.xr.getSession()?.end());
+  control('Change setting','#397365',0,-.85,.5,()=>{
+    worldPicker.value=worldPicker.value==='0'?'1':'0';
+    setWorld(true,Number(worldPicker.value));
+  });
   const ray=new THREE.Raycaster();
   for(let i=0;i<2;i++){
     const hand=renderer.xr.getController(i);
@@ -687,17 +694,17 @@ async function setupXR(){
     return;
   }
   button.disabled=false;
-  message.textContent='In VR, point at a color or an area and pull the trigger.';
+  message.textContent='In VR, point and pull the trigger to color or change settings.';
   renderer.xr.addEventListener('sessionstart',()=>{
     orbit.visible=false;
     desk.visible=true;
     camera.position.set(0,0,0);
-    scene.background=new THREE.Color('#0b1025');
+    setWorld(true,Number(worldPicker.value));
   });
   renderer.xr.addEventListener('sessionend',()=>{
     orbit.visible=true;
     desk.visible=false;
-    scene.background=null;
+    setWorld(false,0);
     resize();
     button.disabled=false;
   });

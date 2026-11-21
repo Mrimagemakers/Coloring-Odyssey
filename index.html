@@ -128,9 +128,28 @@ header nav a{color:#f3e7fc;text-underline-offset:4px}
 #community-groups article,#community-members article{padding:10px 0;border-bottom:1px solid #74608766}
 #artist-feed,#artist-blog{margin-top:25px}#community-status:empty{display:none}
 @media(max-width:650px){.community-grid,.community-posts{grid-template-columns:1fr}}
+
+.mind-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:14px}
+.mind-grid>div{padding:16px;background:#211a2e;border:1px solid #b297736b;border-radius:14px}
+.mind-grid h3{margin-bottom:12px}.mind-grid label{display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+#mind-notes{display:block;width:100%;margin:9px 0;border:1px solid #9180a3;background:#151224;color:#fff5e9;border-radius:8px;padding:8px;font:inherit}
+#mind-orb{width:45px;height:45px;margin:24px auto;border-radius:50%;background:radial-gradient(circle at 35% 30%,#e9ffd8,#8bd9c5 50%,#419a91);box-shadow:0 0 22px #7be3cb99}
+#mind-orb[data-phase=inhale]{transform:scale(1.58);transition:transform 4s ease-in-out}
+#mind-orb[data-phase=exhale]{transform:scale(1);transition:transform 6s ease-in-out}
+.vr-setting{display:flex;gap:6px;align-items:center}
+@media(prefers-reduced-motion:reduce){#mind-orb[data-phase]{transform:none;transition:none}}
+@media(max-width:780px){.mind-grid{grid-template-columns:1fr}}
 </style></head>
-<body><header><strong>PENGAME PUBLISHING</strong><nav class="row"><a href="#worlds">Create together</a><a href="#gallery-title">My gallery</a><a href="#community">Community</a></nav><div class="music-controls"><button type="button" id="music-toggle" aria-pressed="false">♫ Play music</button><label>Volume <input type="range" id="music-volume" min="0" max="100" value="38"></label><span id="music-status" role="status"></span></div></header><main>
-<section class="hero"><div><div class="eyebrow">The Coloring Odyssey Collection</div><h1>Coloring<br><em>Odyssey</em></h1><p>Follow Hue’s magic pen through New York, explore space with Carl, and dive beneath the waves with Dr. Janice Miller.</p><div class="row"><a class="primary" href="#studio">Start coloring</a><button id="vr" disabled><span class="tool-icon" aria-hidden="true">◇</span>Enter VR</button></div><p id="xr-status" role="status">Checking VR support…</p></div><div class="stage" id="stage" aria-hidden="true"></div></section>
+<body><header><strong>PENGAME PUBLISHING</strong><nav class="row"><a href="#worlds">Create together</a><a href="#gallery-title">My gallery</a><a href="#community">Community</a><a href="#mindfulness">Mindfulness</a></nav><div class="music-controls"><button type="button" id="music-toggle" aria-pressed="false">♫ Play music</button><label>Track <select id="music-track"><option value="0">Soft Chimes</option><option value="1">Still Water</option><option value="2">Moonlit Pines</option><option value="3">Morning Light</option></select></label><label>Volume <input type="range" id="music-volume" min="0" max="100" value="38"></label><span id="music-status" role="status"></span></div></header><main>
+<section class="hero"><div><div class="eyebrow">The Coloring Odyssey Collection</div><h1>Coloring<br><em>Odyssey</em></h1><p>Follow Hue’s magic pen through New York, explore space with Carl, and dive beneath the waves with Dr. Janice Miller.</p><div class="row"><a class="primary" href="#studio">Start coloring</a><label class="vr-setting">VR setting <select id="vr-world"><option value="0">Gallery Studio</option><option value="1">Moonlit Zen Garden</option></select></label><button id="vr" disabled><span class="tool-icon" aria-hidden="true">◇</span>Enter VR</button></div><p id="xr-status" role="status">Checking VR support…</p></div><div class="stage" id="stage" aria-hidden="true"></div></section>
+<section id="mindfulness" class="gallery-exhibit">
+<h2>Mindful Coloring</h2>
+<div class="mind-grid">
+<div><h3>Guided coloring</h3><label>Exercise <select id="mind-activity"><option value="0">Color check-in</option><option value="1">Repeat a pattern</option><option value="2">A place to pause</option></select></label>
+<p id="mind-step"></p><p id="mind-prompt" aria-live="polite"></p><div class="row"><button type="button" id="mind-next">Next step</button><a href="#studio">Go to canvas</a></div></div>
+<div><h3>Breathing break</h3><div id="mind-orb" aria-hidden="true"></div><p id="mind-phase" aria-live="polite">Breathe at your natural pace.</p><button type="button" id="mind-breath" aria-pressed="false">Start breathing guide</button></div>
+<div><h3>Private reflection</h3><label for="mind-notes">What did you notice while you colored?</label><textarea id="mind-notes" maxlength="2000" rows="4"></textarea><button type="button" id="mind-save">Save on this device</button><p id="mind-note-status" role="status"></p></div>
+</div></section>
 <section id="worlds" class="gallery-exhibit"><h2>Create Together</h2>
 <div class="world-cards">
 <button class="world-card" id="world-studio" type="button"><img alt=""><span><strong>Art Studio</strong><small>Sketch and paint from scratch</small></span></button>
@@ -201,4 +220,4 @@ header nav a{color:#f3e7fc;text-underline-offset:4px}
 <article><h4>Build a palette around one color</h4><p>Choose a favorite color, then add a lighter tint, a darker shade, and one accent. Try the accent in just a few small areas to draw attention to the part of the page you like best.</p></article>
 <article><h4>Make a coloring session your own</h4><p>Start with the largest shapes, then zoom in for the details. In a friend room, take turns choosing colors or agree on a palette before you begin. Save a copy when you find a combination you love.</p></article>
 </div><div id="community-blog" class="community-posts"></div></section>
-</section></main><footer><a href="https://pengamepublishing.com/">PenGame Publishing</a></footer><script type="module" src="./app.js?v=artist-community-1"></script><script type="module" src="./ambient-music.js?v=1"></script><script type="module" src="./canvas-zoom.js?v=1"></script><script type="module" src="./community.js?v=1"></script></body></html>
+</section></main><footer><a href="https://pengamepublishing.com/">PenGame Publishing</a></footer><script type="module" src="./app.js?v=mindful-gallery-1"></script><script type="module" src="./ambient-music.js?v=2"></script><script type="module" src="./canvas-zoom.js?v=1"></script><script type="module" src="./community.js?v=1"></script><script type="module" src="./mindfulness.js?v=1"></script></body></html>
