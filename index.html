@@ -46,10 +46,71 @@ header{align-items:center;flex-wrap:wrap}
 .music-controls input{width:75px;accent-color:#e8adf3}
 #music-status:empty{display:none}
 #music-status{font-size:.85rem;color:#ffdea8}
+
+/* Gallery wall and warm display lighting */
+body{
+  background:#131021;
+  isolation:isolate;
+  color:#fff7e9;
+}
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:-1;
+  background:
+    linear-gradient(180deg,#170f21b5 0%,#170f215e 24%,#170f21c9 70%,#131021ed 100%),
+    url("./assets/gallery-wall.png") center / cover no-repeat,
+    #131021;
+}
+header{border-bottom-color:#c4915b77;background:#160e20c9;padding:16px 18px;border-radius:0 0 16px 16px}
+header strong{color:#f7d6a5}
+header nav a{color:#f3e7fc;text-underline-offset:4px}
+.hero{
+  position:relative;
+  margin:24px 0 32px;
+  padding:clamp(22px,4vw,48px);
+  border-radius:22px;
+  border:1px solid #a9785c8a;
+  background:linear-gradient(90deg,#160d21ee 0%,#211528ae 40%,#1a13242b 100%),url('./assets/gallery-wall.png') center 72% / cover;
+  box-shadow:0 20px 65px #0a0715a8,inset 0 1px #ffd5a641;
+}
+.hero h1{line-height:.94;text-shadow:0 5px 18px #0a0619}
+.hero .eyebrow{color:#eccc9c}
+.hero p{color:#f3e6fa}
+.hero .primary{background:#ffe0aa;border-color:#ffdf9e}
+.stage{
+  background:radial-gradient(ellipse at 50% 0%,#fad09b35,transparent 75%),#1c142d4a;
+  border:5px solid #aa825a;
+  outline:1px solid #f4d7a287;
+  box-shadow:0 12px 28px #0b061b8c,inset 0 0 0 2px #231525;
+}
+.gallery-exhibit{
+  margin:24px 0;
+  padding:clamp(14px,2.7vw,28px);
+  border-radius:18px;
+  border:1px solid #b58f6d68;
+  background:radial-gradient(ellipse at 50% 0%,#b37e4930,transparent 62%),#1b1425ee;
+  box-shadow:0 16px 36px #0c09156b;
+}
+.gallery-exhibit h2{color:#ffe9c8}
+.gallery-exhibit .books,.gallery-exhibit .gallery{margin-bottom:0}
+.books .collection-cover,.world-card img,.gallery article button:first-child img{
+  border:3px solid #ba986c;
+  box-shadow:inset 0 0 0 1px #211628;
+}
+.world-card{border-color:#b48d6f}
+.world-card img{border-radius:10px 10px 4px 4px;background:#21152b}
+.paper{background:linear-gradient(165deg,#5d3b31,#24182c 65%)}
+.paper canvas{box-shadow:0 12px 30px #130a18ab,0 0 0 4px #bf9a72}
+@media(max-width:780px){
+  .hero{margin-top:15px;background:linear-gradient(170deg,#170f22ee 0%,#21152aa8 60%,#1a13242b 100%),url('./assets/gallery-wall.png') 80% center / cover}
+  .stage{height:220px}
+}
 </style></head>
 <body><header><strong>PENGAME PUBLISHING</strong><nav class="row"><a href="#worlds">Create together</a><a href="#gallery-title">My gallery</a></nav><div class="music-controls"><button type="button" id="music-toggle" aria-pressed="false">♫ Play music</button><label>Volume <input type="range" id="music-volume" min="0" max="100" value="38"></label><span id="music-status" role="status"></span></div></header><main>
 <section class="hero"><div><div class="eyebrow">The Coloring Odyssey Collection</div><h1>Coloring<br><em>Odyssey</em></h1><p>Follow Hue’s magic pen through New York, explore space with Carl, and dive beneath the waves with Dr. Janice Miller.</p><div class="row"><a class="primary" href="#studio">Start coloring</a><button id="vr" disabled><span class="tool-icon" aria-hidden="true">◇</span>Enter VR</button></div><p id="xr-status" role="status">Checking VR support…</p></div><div class="stage" id="stage" aria-hidden="true"></div></section>
-<section id="worlds"><h2>Create Together</h2>
+<section id="worlds" class="gallery-exhibit"><h2>Create Together</h2>
 <div class="world-cards">
 <button class="world-card" id="world-studio" type="button"><img alt=""><span><strong>Art Studio</strong><small>Sketch and paint from scratch</small></span></button>
 <button class="world-card" id="world-odyssey" type="button"><img alt=""><span><strong>Coloring Odyssey World</strong><small>Color scenes from the Odyssey collections</small></span></button>
@@ -62,7 +123,7 @@ header{align-items:center;flex-wrap:wrap}
 <canvas id="room-canvas" class="friend-board" width="720" height="480" aria-label="Shared drawing canvas"></canvas>
 <div class="row"><button id="room-save" type="button">Save to gallery</button><button id="room-share" type="button">Share PNG</button><span id="room-save-status" role="status"></span></div>
 </section></section>
-<section><h2>Explore Categories</h2><div class="books" id="books"></div></section>
+<section class="gallery-exhibit"><h2>Explore Categories</h2><div class="books" id="books"></div></section>
 <section id="studio"><h2 id="book-title">Coloring Studio</h2><details id="page-browser" class="page-browser" open><summary>Browse coloring pages</summary><div class="thumb-controls"><button id="tiles-back" type="button" aria-label="Previous thumbnails">‹</button><span id="tile-count" aria-live="polite"></span><button id="tiles-forward" type="button" aria-label="Next thumbnails">›</button></div><div id="page-thumbnails" class="page-thumbnails"></div></details><div class="studio"><div class="tools">
 <label class="page-picker">Page <select id="pages"></select></label>
 <div class="row page-nav"><button id="previous" type="button"><span class="tool-icon" aria-hidden="true">‹</span>Previous page</button><button id="next" type="button"><span class="tool-icon" aria-hidden="true">›</span>Next page</button></div><div class="row" id="palette" aria-label="Color palette"></div>
@@ -72,5 +133,5 @@ header{align-items:center;flex-wrap:wrap}
 <div class="row"><button id="save"><span class="tool-icon" aria-hidden="true">▣</span>Save to gallery</button><button id="share" type="button">↗ Share PNG</button><button id="download"><span class="tool-icon" aria-hidden="true">↓</span>Download PNG</button></div>
 <label>Import a book PDF or line-art image <input id="import" type="file" accept="application/pdf,.pdf,image/png,image/jpeg,image/webp" style="max-width:100%"></label>
 <div class="row" id="pdf-controls" hidden style="display:none"><button id="pdf-prev" type="button" aria-label="Previous PDF page">←</button><span id="pdf-count"></span><button id="pdf-next" type="button" aria-label="Next PDF page">→</button></div><div id="status" role="status" aria-live="polite"></div></div><div class="paper"><canvas id="paper" width="720" height="480" aria-label="Coloring page"></canvas></div></div></section>
-<section><h2 id="gallery-title">My gallery</h2><p id="gallery-status" role="status"></p><div class="gallery" id="gallery"></div></section>
+<section class="gallery-exhibit"><h2 id="gallery-title">My gallery</h2><p id="gallery-status" role="status"></p><div class="gallery" id="gallery"></div></section>
 </main><footer><a href="https://pengamepublishing.com/">PenGame Publishing</a></footer><script type="module" src="./app.js?v=shared-art-1"></script><script type="module" src="./ambient-music.js?v=1"></script></body></html>
