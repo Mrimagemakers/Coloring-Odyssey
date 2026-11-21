@@ -1,6 +1,6 @@
 const worlds={
-  studio:{title:'Art Studio',cover:[5,6],sheets:[['Blank canvas'],['Garden Bouquet',5,0],['The Roller-Skate Hero',8,0],['Petal Compass',9,2]]},
-  odyssey:{title:'Coloring Odyssey World',cover:[1,2],sheets:[['Saturn Flyby',1,0],['The Rooftop Mural',0,2],['Coral Garden',2,2],['Ravenbrook Clocktower',3,0]]}
+  studio:{title:'Art Studio',sheets:[['Blank canvas'],['The Artist’s Desk',5,0,0],['Butterfly Greenhouse',5,0,1],['Petal Patchwork',9,2,2]]},
+  odyssey:{title:'Coloring Odyssey World',sheets:[['Hue’s Skyline Mural',0,2,3],['Carl’s Ringed Planet',1,0,4],['Janice’s Jellyfish Reef',2,0,5]]}
 };
 
 export function setupFriendWorlds({artwork,buildFillBoundary,saveArtwork,shareArtwork}){
@@ -13,16 +13,30 @@ export function setupFriendWorlds({artwork,buildFillBoundary,saveArtwork,shareAr
   const guests=new Set(), drafts=new Map();
   let world, sheet=0, boundary, peer, host, id, connecting=false, ready=true, generation=0, revision=0;
   let tool='brush', stroke;
+  let illustrations;
+  const artSheet=new Image();
+  artSheet.src='./pages/create-together-illustrations.png';
+  const artReady=artSheet.decode().then(()=>{illustrations=artSheet;}).catch(()=>{});
+  function drawIllustration(context,book,page,tile){
+    if(!illustrations){artwork(context,book,page);return;}
+    const tileWidth=illustrations.naturalWidth/3;
+    const tileHeight=illustrations.naturalHeight/2;
+    const size=height-24;
+    context.fillStyle='#fff';
+    context.fillRect(0,0,width,height);
+    context.drawImage(illustrations,tile%3*tileWidth,Math.floor(tile/3)*tileHeight,tileWidth,tileHeight,
+      (width-size)/2,(height-size)/2,size,size);
+  }
 
   function reset(index){
     sheet=index;
     stroke=null;
     picker.value=String(sheet);
-    const [,book,page]=worlds[world].sheets[sheet];
+    const [,book,page,tile]=worlds[world].sheets[sheet];
     if(book===undefined){
       ctx.fillStyle='#fff';
       ctx.fillRect(0,0,width,height);
-    }else artwork(ctx,book,page);
+    }else drawIllustration(ctx,book,page,tile);
     boundary=buildFillBoundary(ctx.getImageData(0,0,width,height));
   }
   function controls(){
@@ -65,10 +79,20 @@ export function setupFriendWorlds({artwork,buildFillBoundary,saveArtwork,shareAr
     const cover=document.createElement('canvas');
     cover.width=width;
     cover.height=height;
-    artwork(cover.getContext('2d'),...config.cover);
     const button=$('world-'+name);
-    button.querySelector('img').src=cover.toDataURL('image/webp',.78);
-    button.onclick=()=>{openWorld(name);room.scrollIntoView({block:'start'});};
+    const preview=button.querySelector('img');
+    const [,book,page,tile]=config.sheets[name==='studio'?1:0];
+    const showCover=()=>{
+      drawIllustration(cover.getContext('2d'),book,page,tile);
+      preview.src=cover.toDataURL('image/webp',.78);
+    };
+    showCover();
+    artReady.then(showCover);
+    button.onclick=async()=>{
+      await artReady;
+      openWorld(name);
+      room.scrollIntoView({block:'start'});
+    };
   }
 
   function fill(x,y,color){
@@ -227,7 +251,7 @@ export function setupFriendWorlds({artwork,buildFillBoundary,saveArtwork,shareAr
     try{
       const {Peer}=await import('https://cdn.jsdelivr.net/npm/peerjs@1.5.5/+esm');
       if(generation!==session) return;
-      const code=invite??'odyssey-'+crypto.randomUUID();
+      const code=invite??'odyssey-art-'+crypto.randomUUID();
       peer=invite?new Peer():new Peer(code);
       peer.on('error',()=>{if(generation===session) leave('Could not connect to the friend room. You can keep drawing solo.');});
       if(!invite) peer.on('connection',link=>addGuest(link,session));
@@ -269,9 +293,11 @@ export function setupFriendWorlds({artwork,buildFillBoundary,saveArtwork,shareAr
   };
   const params=new URLSearchParams(location.search);
   const invite=params.get('friend'), requestedWorld=params.get('world');
-  if(/^odyssey-[0-9a-f-]{36}$/.test(invite??'')&&Object.hasOwn(worlds,requestedWorld)){
-    openWorld(requestedWorld);
-    room.scrollIntoView({block:'start'});
-    connect(invite);
+  if(/^odyssey-art-[0-9a-f-]{36}$/.test(invite??'')&&Object.hasOwn(worlds,requestedWorld)){
+    artReady.then(()=>{
+      openWorld(requestedWorld);
+      room.scrollIntoView({block:'start'});
+      connect(invite);
+    });
   }
 }

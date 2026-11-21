@@ -1,5 +1,5 @@
 import {books,artwork} from './art.js?v=studio-cards-1';
-import {setupFriendWorlds} from './friend-worlds.js?v=2';
+import {setupFriendWorlds} from './friend-worlds.js?v=3';
 import {bookPages} from './book-pages.js';
 
 const generatedTitles=['Owl and Rabbit','Sunflower Patch','Castle in the Clouds','Camper in the Pines','The Young Engineer','Star Quilt Rosette'];
