@@ -107,6 +107,16 @@ header nav a{color:#f3e7fc;text-underline-offset:4px}
   .hero{margin-top:15px;background:linear-gradient(170deg,#170f22ee 0%,#21152aa8 60%,#1a13242b 100%),url('./assets/gallery-wall.png') 80% center / cover}
   .stage{height:220px}
 }
+
+.canvas-zoom{margin:8px 0}
+.canvas-zoom button{min-width:42px}
+.studio>.canvas-zoom{grid-column:2;grid-row:1;justify-content:flex-end;padding:0 18px}
+.studio>.tools{grid-row:1/3}
+.studio>.paper{grid-column:2;min-width:0}
+.room-paper{min-width:0}
+.paper.is-zoomed,.room-paper.is-zoomed{display:block;overflow:auto;max-height:76vh}
+.paper.is-zoomed canvas,.room-paper.is-zoomed canvas{max-width:none;max-height:none;margin:0 auto}
+@media(max-width:780px){.studio>.tools,.studio>.canvas-zoom,.studio>.paper{grid-column:1;grid-row:auto}.studio>.canvas-zoom{justify-content:flex-start}}
 </style></head>
 <body><header><strong>PENGAME PUBLISHING</strong><nav class="row"><a href="#worlds">Create together</a><a href="#gallery-title">My gallery</a></nav><div class="music-controls"><button type="button" id="music-toggle" aria-pressed="false">♫ Play music</button><label>Volume <input type="range" id="music-volume" min="0" max="100" value="38"></label><span id="music-status" role="status"></span></div></header><main>
 <section class="hero"><div><div class="eyebrow">The Coloring Odyssey Collection</div><h1>Coloring<br><em>Odyssey</em></h1><p>Follow Hue’s magic pen through New York, explore space with Carl, and dive beneath the waves with Dr. Janice Miller.</p><div class="row"><a class="primary" href="#studio">Start coloring</a><button id="vr" disabled><span class="tool-icon" aria-hidden="true">◇</span>Enter VR</button></div><p id="xr-status" role="status">Checking VR support…</p></div><div class="stage" id="stage" aria-hidden="true"></div></section>
@@ -120,7 +130,7 @@ header nav a{color:#f3e7fc;text-underline-offset:4px}
 <div class="row"><button id="room-host" type="button">Start a friend room</button><button id="room-copy" type="button" hidden>Copy invite link</button><button id="room-leave" type="button" hidden>Leave room</button></div>
 <div id="room-invite-label" hidden><label>Invite link <input id="room-invite" type="text" readonly></label></div><p id="room-status" role="status"></p>
 <div class="row"><label>New sheet <select id="room-sheet"></select></label><button id="room-brush" type="button" aria-pressed="true">✎ Brush</button><button id="room-fill" type="button" aria-pressed="false">◈ Fill</button><label>Color <input id="room-color" type="color" value="#914ff5"></label><label>Brush size <input id="room-size" type="range" min="2" max="45" value="12"></label></div>
-<canvas id="room-canvas" class="friend-board" width="720" height="480" aria-label="Shared drawing canvas"></canvas>
+<div class="row canvas-zoom" data-canvas-zoom="room-canvas" role="group" aria-label="Canvas zoom"><button type="button" data-zoom-out aria-label="Zoom out" disabled>−</button><button type="button" data-zoom-reset aria-label="Reset zoom">100%</button><button type="button" data-zoom-in aria-label="Zoom in">+</button></div><div class="room-paper"><canvas id="room-canvas" class="friend-board" width="720" height="480" aria-label="Shared drawing canvas"></canvas></div>
 <div class="row"><button id="room-save" type="button">Save to gallery</button><button id="room-share" type="button">Share PNG</button><span id="room-save-status" role="status"></span></div>
 </section></section>
 <section class="gallery-exhibit"><h2>Explore Categories</h2><div class="books" id="books"></div></section>
@@ -132,6 +142,6 @@ header nav a{color:#f3e7fc;text-underline-offset:4px}
 <label>Brush size <input id="size" type="range" min="2" max="45" value="12"></label>
 <div class="row"><button id="save"><span class="tool-icon" aria-hidden="true">▣</span>Save to gallery</button><button id="share" type="button">↗ Share PNG</button><button id="download"><span class="tool-icon" aria-hidden="true">↓</span>Download PNG</button></div>
 <label>Import a book PDF or line-art image <input id="import" type="file" accept="application/pdf,.pdf,image/png,image/jpeg,image/webp" style="max-width:100%"></label>
-<div class="row" id="pdf-controls" hidden style="display:none"><button id="pdf-prev" type="button" aria-label="Previous PDF page">←</button><span id="pdf-count"></span><button id="pdf-next" type="button" aria-label="Next PDF page">→</button></div><div id="status" role="status" aria-live="polite"></div></div><div class="paper"><canvas id="paper" width="720" height="480" aria-label="Coloring page"></canvas></div></div></section>
+<div class="row" id="pdf-controls" hidden style="display:none"><button id="pdf-prev" type="button" aria-label="Previous PDF page">←</button><span id="pdf-count"></span><button id="pdf-next" type="button" aria-label="Next PDF page">→</button></div><div id="status" role="status" aria-live="polite"></div></div><div class="row canvas-zoom" data-canvas-zoom="paper" role="group" aria-label="Canvas zoom"><button type="button" data-zoom-out aria-label="Zoom out" disabled>−</button><button type="button" data-zoom-reset aria-label="Reset zoom">100%</button><button type="button" data-zoom-in aria-label="Zoom in">+</button></div><div class="paper"><canvas id="paper" width="720" height="480" aria-label="Coloring page"></canvas></div></div></section>
 <section class="gallery-exhibit"><h2 id="gallery-title">My gallery</h2><p id="gallery-status" role="status"></p><div class="gallery" id="gallery"></div></section>
-</main><footer><a href="https://pengamepublishing.com/">PenGame Publishing</a></footer><script type="module" src="./app.js?v=shared-art-1"></script><script type="module" src="./ambient-music.js?v=1"></script></body></html>
+</main><footer><a href="https://pengamepublishing.com/">PenGame Publishing</a></footer><script type="module" src="./app.js?v=zen-seasons-1"></script><script type="module" src="./ambient-music.js?v=1"></script><script type="module" src="./canvas-zoom.js?v=1"></script></body></html>

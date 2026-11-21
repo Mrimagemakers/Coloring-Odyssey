@@ -1,4 +1,4 @@
-import {books,artwork} from './art.js?v=studio-cards-1';
+import {books,artwork} from './art.js?v=zen-seasons-1';
 import {setupFriendWorlds} from './friend-worlds.js?v=3';
 import {bookPages} from './book-pages.js';
 
@@ -100,7 +100,7 @@ books.forEach(([name,character,tint],i)=>{
     front.src=print[0];
     front.onerror=()=>front.remove();
     cover.append(front);
-  }else if(i>=4){
+  }else if(i>=4 && i<4+generatedIndexes.length){
     previewGeneratedTile(image,i-4);
   }else if(original){
     const preview=new Image();
@@ -564,9 +564,35 @@ async function setupXR(){
   const board=new THREE.Mesh(new THREE.PlaneGeometry(1.5,1),material);
   board.position.set(0,.12,-1.85);
   desk.add(board);
-  const print=new THREE.Mesh(new THREE.PlaneGeometry(1.74,1.16),material);
-  print.position.z=.18;
-  orbit.add(print);
+  const brush=new THREE.Group();
+  const handle=new THREE.MeshStandardMaterial({color:0x973ae1,roughness:.28,metalness:.2});
+  const gold=new THREE.MeshStandardMaterial({color:0xe9b66a,roughness:.27,metalness:.7});
+  const bristles=new THREE.MeshStandardMaterial({color:0xe2b68a,roughness:.82});
+  const paint=new THREE.MeshStandardMaterial({color:0x42e3c4,roughness:.3});
+  function brushSection(profile,surface){
+    const points=profile.map(([radius,y])=>new THREE.Vector2(radius,y));
+    const mesh=new THREE.Mesh(new THREE.LatheGeometry(points,48),surface);
+    mesh.scale.z=.66;
+    brush.add(mesh);
+  }
+  brushSection([[0,-1.31],[.09,-1.29],[.12,-1.2],[.145,-.7],[.2,-.2],[.22,.15],[.19,.4]],handle);
+  brushSection([[.19,.37],[.23,.41],[.24,.47],[.235,.72],[.22,.78]],gold);
+  brushSection([[.22,.76],[.26,.85],[.255,.99],[.215,1.14],[.14,1.3],[.06,1.39],[0,1.43]],bristles);
+  brushSection([[.153,1.27],[.115,1.36],[.055,1.42],[0,1.46]],paint);
+  for(const y of [.46,.70]){
+    const seam=new THREE.Mesh(new THREE.TorusGeometry(.237,.016,12,48),gold);
+    seam.rotation.x=Math.PI/2;
+    seam.scale.y=.66;
+    seam.position.y=y;
+    brush.add(seam);
+  }
+  brush.rotation.z=-.66;
+  brush.position.z=.3;
+  orbit.add(brush);
+  scene.add(new THREE.HemisphereLight(0xffe5ff,0x62467d,2.3));
+  const keyLight=new THREE.DirectionalLight(0xffdfbc,3.2);
+  keyLight.position.set(2,4,5);
+  scene.add(keyLight);
   const rings=[];
   for(let i=0;i<6;i++){
     const ring=new THREE.Mesh(new THREE.TorusGeometry(.92+i*.125,.012,7,70),new THREE.MeshBasicMaterial({transparent:true,opacity:.9-i*.1}));
@@ -638,7 +664,7 @@ async function setupXR(){
     }
     const aspect=canvas.width/canvas.height;
     board.scale.set(Math.min(1,aspect/1.5),Math.min(1,1.5/aspect),1);
-    print.scale.copy(board.scale);
+
     renderer.render(scene,camera);
   });
   if(!navigator.xr || !await navigator.xr.isSessionSupported('immersive-vr')){

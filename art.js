@@ -1,3 +1,5 @@
+import {zenPages,seasonPages,drawCalmPage} from './calm-pages.js?v=1';
+
 export const books=[
   ['Hue’s Got Flow','Hue Davis Jr.','#843291',['The Magic Pen','Midnight Mixtape','The Rooftop Mural']],
   ['Cosmic Coloring','Astronaut Carl Reed','#313584',['Saturn Flyby','Carl’s Space Helmet','Moon Base']],
@@ -8,7 +10,9 @@ export const books=[
   ["Fantasy","Magic and mythical worlds","#69418d",["Castle Above the Clouds"]],
   ["Vehicles","Cars and rides","#af6032",["Classic Coupe"]],
   ["Characters","Original portraits","#724d91",["The Roller-Skate Hero"]],
-  ["Patterns","Geometric designs","#a6437d",["Sunburst Mandala"]]
+  ["Patterns","Geometric designs","#a6437d",["Sunburst Mandala"]],
+  ["Zen","Mandala, bonsai, and quiet moments","#76604c",zenPages],
+  ["Seasons","Spring through winter","#377268",seasonPages]
 ];
 
 const extraPages=[
@@ -244,6 +248,10 @@ function drawExpandedScene(ctx,book,page,shape,oval,box,star){
 }
 
 export function artwork(ctx,book,page){
+  if(book>=10){
+    drawCalmPage(ctx,book===10?'zen':'seasons',page);
+    return;
+  }
   function shape(path,paint=true,width=4){
     const p=new Path2D(path);
     ctx.lineWidth=width;
