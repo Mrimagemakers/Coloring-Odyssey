@@ -1,6 +1,7 @@
-import {books,artwork} from './art.js?v=zen-stones-1';
+import {books,artwork} from './art.js?v=zen-detail-1';
 import {setupFriendWorlds} from './friend-worlds.js?v=3';
 import {makeVRWorlds} from './vr-worlds.js?v=1';
+import {drawZenBorder} from './calm-pages.js?v=3';
 import {bookPages} from './book-pages.js';
 
 const generatedTitles=['Owl and Rabbit','Sunflower Patch','Castle in the Clouds','Camper in the Pines','The Young Engineer','Star Quilt Rosette'];
@@ -29,10 +30,12 @@ function paintGeneratedTile(ctx,sheet,tile,size){
   const columns=tile>=6?2:3;
   const index=tile>=6?tile-6:tile;
   const w=sheet.naturalWidth/columns,h=sheet.naturalHeight/2;
-  const margin=size*.035;
+  const zen=tile===6||tile===7;
+  const margin=size*(zen?.085:.035);
   ctx.fillStyle='#fff';
   ctx.fillRect(0,0,size,size);
   ctx.drawImage(sheet,(index%columns)*w,Math.floor(index/columns)*h,w,h,margin,margin,size-2*margin,size-2*margin);
+  if(zen) drawZenBorder(ctx,size,size,Math.round(size*.055));
 }
 function previewGeneratedTile(target,tile){
   loadArtSheet(tile).then(sheet=>{
