@@ -1,6 +1,7 @@
 import {paintStroke,isUtensil,originalSurface} from './drawing-tools.js?v=1';
 
 import {colorRegion} from './fill-region.js?v=1';
+import {kidMode} from './player-mode.js?v=1';
 
 const worlds={
   studio:{title:'Art Studio',sheets:[['Blank canvas'],['The Artist’s Desk',5,0,0],['Butterfly Greenhouse',5,0,1],['Petal Patchwork',9,2,2]]},
@@ -46,8 +47,11 @@ export function setupFriendWorlds({artwork,buildFillBoundary,saveArtwork,shareAr
     cleanSurface=originalSurface(original);
     paperPixels=original.data;
   }
+  // Kid mode (under 13, from PenGame's age check): draw solo, no friend rooms.
+  const soloMessage=kidMode?'Draw and color on your own canvas.':'Draw solo or start a friend room.';
+  if(kidMode) $('room-host').hidden=true;
   function controls(){
-    $('room-host').hidden=Boolean(id||connecting);
+    $('room-host').hidden=kidMode||Boolean(id||connecting);
     $('room-copy').hidden=!id||!ready;
     $('room-invite-label').hidden=!id||!ready;
     $('room-invite').value=id&&ready?inviteUrl():'';
@@ -55,7 +59,7 @@ export function setupFriendWorlds({artwork,buildFillBoundary,saveArtwork,shareAr
     picker.disabled=connecting||Boolean(host);
     $('room-save').disabled=$('room-share').disabled=!ready;
   }
-  function leave(message='Draw solo or start a friend room.'){
+  function leave(message=soloMessage){
     generation++;
     const previous=peer;
     peer=host=id=null;
@@ -79,7 +83,7 @@ export function setupFriendWorlds({artwork,buildFillBoundary,saveArtwork,shareAr
     reset(draft?.sheet??0);
     if(draft) ctx.putImageData(draft.image,0,0);
     for(const name of Object.keys(worlds)) $('world-'+name).setAttribute('aria-pressed',String(name===next));
-    status('Draw solo or start a friend room.');
+    status(soloMessage);
     saveStatus('');
   }
   for(const [name,config] of Object.entries(worlds)){
@@ -217,7 +221,7 @@ export function setupFriendWorlds({artwork,buildFillBoundary,saveArtwork,shareAr
     link.on('error',()=>{if(generation===session) leave('The connection dropped. Open the invite again to retry.');});
   }
   async function connect(invite){
-    if(connecting||id) return;
+    if(kidMode||connecting||id) return;
     const session=++generation;
     connecting=true;
     ready=!invite;
@@ -259,6 +263,7 @@ export function setupFriendWorlds({artwork,buildFillBoundary,saveArtwork,shareAr
     const url=new URL(location.href);
     url.searchParams.set('world',world);
     url.searchParams.set('friend',id);
+    url.searchParams.delete('pg_mode');
     url.hash='friend-room';
     return url.href;
   }
@@ -271,7 +276,7 @@ export function setupFriendWorlds({artwork,buildFillBoundary,saveArtwork,shareAr
   };
   const params=new URLSearchParams(location.search);
   const invite=params.get('friend'), requestedWorld=params.get('world');
-  if(/^odyssey-art-[0-9a-f-]{36}$/.test(invite??'')&&Object.hasOwn(worlds,requestedWorld)){
+  if(!kidMode&&/^odyssey-art-[0-9a-f-]{36}$/.test(invite??'')&&Object.hasOwn(worlds,requestedWorld)){
     artReady.then(()=>{
       openWorld(requestedWorld);
       room.scrollIntoView({block:'start'});
