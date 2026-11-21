@@ -145,8 +145,14 @@ header nav a{color:#f3e7fc;text-underline-offset:4px}
 .print-feature-art img{display:block;width:100%;height:auto}
 .print-feature-action{display:flex;justify-content:center;padding:15px;background:#21172e}
 #book-collection{scroll-margin-top:18px}
+
+.promo-video-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:16px}
+.promo-video{min-width:0;padding:13px;background:#23192c;border:1px solid #b18a635e;border-radius:13px}
+.promo-video h3{margin:0 0 10px;color:#ffe2b6}
+.promo-video video{display:block;width:100%;aspect-ratio:16/9;background:#100c17;border-radius:8px}
+@media(max-width:640px){.promo-video-grid{grid-template-columns:1fr}}
 </style></head>
-<body><header><strong>PENGAME PUBLISHING</strong><nav class="row"><a href="#worlds">Create together</a><a href="#gallery-title">My gallery</a><a href="#community">Community</a><a href="#print-editions">Print editions</a><a href="#mindfulness">Mindfulness</a></nav><div class="music-controls"><button type="button" id="music-toggle" aria-pressed="false">♫ Play music</button><label>Track <select id="music-track"><option value="0">Soft Chimes</option><option value="1">Still Water</option><option value="2">Moonlit Pines</option><option value="3">Morning Light</option></select></label><label>Volume <input type="range" id="music-volume" min="0" max="100" value="38"></label><span id="music-status" role="status"></span></div></header><main>
+<body><header><strong>PENGAME PUBLISHING</strong><nav class="row"><a href="#worlds">Create together</a><a href="#gallery-title">My gallery</a><a href="#community">Community</a><a href="#print-editions">Print editions</a><a href="#promo-videos">Videos</a><a href="#mindfulness">Mindfulness</a></nav><div class="music-controls"><button type="button" id="music-toggle" aria-pressed="false">♫ Play music</button><label>Track <select id="music-track"><option value="0">Soft Chimes</option><option value="1">Still Water</option><option value="2">Moonlit Pines</option><option value="3">Morning Light</option></select></label><label>Volume <input type="range" id="music-volume" min="0" max="100" value="38"></label><span id="music-status" role="status"></span></div></header><main>
 <section class="hero"><div><div class="eyebrow">The Coloring Odyssey Collection</div><h1>Coloring<br><em>Odyssey</em></h1><p>Follow Hue’s magic pen through New York, explore space with Carl, and dive beneath the waves with Dr. Janice Miller.</p><div class="row"><a class="primary" href="#studio">Start coloring</a><label class="vr-setting">VR setting <select id="vr-world"><option value="0">Gallery Studio</option><option value="1">Moonlit Zen Garden</option></select></label><button id="vr" disabled><span class="tool-icon" aria-hidden="true">◇</span>Enter VR</button></div><p id="xr-status" role="status">Checking VR support…</p></div><div class="stage" id="stage" aria-hidden="true"></div></section>
 <section id="mindfulness" class="gallery-exhibit">
 <h2>Mindful Coloring</h2>
@@ -172,6 +178,39 @@ header nav a{color:#f3e7fc;text-underline-offset:4px}
 <section id="print-editions" class="gallery-exhibit print-feature" aria-label="Coloring Odyssey print editions">
 <a class="print-feature-art" href="#book-collection" aria-label="Explore Coloring Odyssey print editions"><img src="./assets/coloring-odyssey-promo.jpg" alt="Coloring Odyssey, available in print" width="1024" height="500" loading="lazy" decoding="async"></a>
 <div class="print-feature-action"><a class="primary" href="#book-collection">Explore print editions</a></div>
+</section>
+<section id="promo-videos" class="gallery-exhibit" aria-labelledby="promo-video-title">
+<h2 id="promo-video-title">Watch Coloring Odyssey</h2>
+<div class="promo-video-grid">
+<article class="promo-video">
+<h3 id="video-coloring-app">Coloring App Video</h3>
+<video aria-labelledby="video-coloring-app" controls playsinline preload="none" poster="./assets/video-coloring-app.jpg">
+<source src="https://dzzczqyzplymlxseqrir.supabase.co/storage/v1/object/public/odyssey-promos/coloring-app.mp4" type="video/mp4">
+<a href="https://dzzczqyzplymlxseqrir.supabase.co/storage/v1/object/public/odyssey-promos/coloring-app.mp4">Open this video</a>
+</video>
+</article>
+<article class="promo-video">
+<h3 id="video-adult-coloring-books">Adult Coloring Books</h3>
+<video aria-labelledby="video-adult-coloring-books" controls playsinline preload="none" poster="./assets/video-adult-coloring-books.jpg">
+<source src="https://dzzczqyzplymlxseqrir.supabase.co/storage/v1/object/public/odyssey-promos/adult-coloring-books.mp4" type="video/mp4">
+<a href="https://dzzczqyzplymlxseqrir.supabase.co/storage/v1/object/public/odyssey-promos/adult-coloring-books.mp4">Open this video</a>
+</video>
+</article>
+<article class="promo-video">
+<h3 id="video-hues-got-flow">Hue’s Got Flow</h3>
+<video aria-labelledby="video-hues-got-flow" controls playsinline preload="none" poster="./assets/video-hues-got-flow.jpg">
+<source src="https://dzzczqyzplymlxseqrir.supabase.co/storage/v1/object/public/odyssey-promos/hues-got-flow.mp4" type="video/mp4">
+<a href="https://dzzczqyzplymlxseqrir.supabase.co/storage/v1/object/public/odyssey-promos/hues-got-flow.mp4">Open this video</a>
+</video>
+</article>
+<article class="promo-video">
+<h3 id="video-underwater-adventure">Underwater Adventure</h3>
+<video aria-labelledby="video-underwater-adventure" controls playsinline preload="none" poster="./assets/video-underwater-adventure.jpg">
+<source src="https://dzzczqyzplymlxseqrir.supabase.co/storage/v1/object/public/odyssey-promos/underwater-adventure.mp4" type="video/mp4">
+<a href="https://dzzczqyzplymlxseqrir.supabase.co/storage/v1/object/public/odyssey-promos/underwater-adventure.mp4">Open this video</a>
+</video>
+</article>
+</div>
 </section>
 <section id="book-collection" class="gallery-exhibit"><h2>Explore Categories</h2><div class="books" id="books"></div></section>
 <section id="studio"><h2 id="book-title">Coloring Studio</h2><details id="page-browser" class="page-browser" open><summary>Browse coloring pages</summary><div class="thumb-controls"><button id="tiles-back" type="button" aria-label="Previous thumbnails">‹</button><span id="tile-count" aria-live="polite"></span><button id="tiles-forward" type="button" aria-label="Next thumbnails">›</button></div><div id="page-thumbnails" class="page-thumbnails"></div></details><div class="studio"><div class="tools">
@@ -230,4 +269,10 @@ header nav a{color:#f3e7fc;text-underline-offset:4px}
 <article><h4>Build a palette around one color</h4><p>Choose a favorite color, then add a lighter tint, a darker shade, and one accent. Try the accent in just a few small areas to draw attention to the part of the page you like best.</p></article>
 <article><h4>Make a coloring session your own</h4><p>Start with the largest shapes, then zoom in for the details. In a friend room, take turns choosing colors or agree on a palette before you begin. Save a copy when you find a combination you love.</p></article>
 </div><div id="community-blog" class="community-posts"></div></section>
-</section></main><footer><a href="https://pengamepublishing.com/">PenGame Publishing</a></footer><script type="module" src="./app.js?v=distinct-seasons-1"></script><script type="module" src="./ambient-music.js?v=2"></script><script type="module" src="./canvas-zoom.js?v=1"></script><script type="module" src="./community.js?v=2"></script><script type="module" src="./mindfulness.js?v=1"></script></body></html>
+</section></main><footer><a href="https://pengamepublishing.com/">PenGame Publishing</a></footer><script type="module" src="./app.js?v=distinct-seasons-1"></script><script type="module" src="./ambient-music.js?v=2"></script><script type="module" src="./canvas-zoom.js?v=1"></script><script type="module" src="./community.js?v=2"></script><script type="module" src="./mindfulness.js?v=1"></script><script>
+const promoPlayers = [...document.querySelectorAll('#promo-videos video')];
+for (const player of promoPlayers) player.addEventListener('play', () => {
+  for (const other of promoPlayers) if (other !== player) other.pause();
+  document.querySelector('#music-toggle[aria-pressed="true"]')?.click();
+});
+</script></body></html>
