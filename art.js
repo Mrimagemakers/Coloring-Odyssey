@@ -1,4 +1,6 @@
-import {zenPages,seasonPages,drawCalmPage} from './calm-pages.js?v=3';
+import {zenPages,seasonPages,drawCalmPage} from './calm-pages.js?v=4';
+
+import {drawSeasons} from './seasons-pages.js?v=1';
 
 export const books=[
   ['Hue’s Got Flow','Hue Davis Jr.','#843291',['The Magic Pen','Midnight Mixtape','The Rooftop Mural']],
@@ -249,7 +251,8 @@ function drawExpandedScene(ctx,book,page,shape,oval,box,star){
 
 export function artwork(ctx,book,page){
   if(book>=10){
-    drawCalmPage(ctx,book===10?'zen':'seasons',page);
+    if(book===10) drawCalmPage(ctx,'zen',page);
+    else drawSeasons(ctx,page);
     return;
   }
   function shape(path,paint=true,width=4){

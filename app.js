@@ -1,7 +1,7 @@
-import {books,artwork} from './art.js?v=zen-detail-1';
+import {books,artwork} from './art.js?v=distinct-seasons-1';
 import {setupFriendWorlds} from './friend-worlds.js?v=3';
 import {makeVRWorlds} from './vr-worlds.js?v=1';
-import {drawZenBorder} from './calm-pages.js?v=3';
+import {drawZenBorder} from './calm-pages.js?v=4';
 import {bookPages} from './book-pages.js';
 
 const generatedTitles=['Owl and Rabbit','Sunflower Patch','Castle in the Clouds','Camper in the Pines','The Young Engineer','Star Quilt Rosette'];
@@ -11,7 +11,7 @@ const generatedIndexes=generatedTitles.map((title,i)=>{
   return pages.length-1;
 });
 const sheetPromises=new Map();
-const upgradedTiles={10:{0:6,6:7},11:{6:8,10:9}};
+const upgradedTiles={10:{0:6,6:7}};
 const generatedPreviews=new Map();
 function generatedTile(book,page){
   return upgradedTiles[book]?.[page]??(book>=4&&generatedIndexes[book-4]===page?book-4:-1);
@@ -110,7 +110,7 @@ books.forEach(([name,character,tint],i)=>{
     front.onerror=()=>front.remove();
     cover.append(front);
   }else if(upgradedTiles[i]){
-    previewGeneratedTile(image,i===10?6:8);
+    previewGeneratedTile(image,6);
   }else if(i>=4 && i<4+generatedIndexes.length){
     previewGeneratedTile(image,i-4);
   }else if(original){
@@ -126,7 +126,7 @@ books.forEach(([name,character,tint],i)=>{
   button.style.setProperty('--tint',tint);
   button.append(cover,label,credit);
   button.onclick=()=>{
-    open(i,i===11?6:generatedIndexes[i-4]??firstIllustration(i));
+    open(i,generatedIndexes[i-4]??firstIllustration(i));
     $('studio').scrollIntoView();
   };
   const card=document.createElement('article');

@@ -58,10 +58,6 @@ export function drawCalmPage(ctx,theme,page){
     ctx.restore();
   };
   const hill=(y,bend)=>outline(`M24 ${y}Q184 ${y-bend} 360 ${y}T696 ${y}V456H24Z`);
-  const pine=(x,y,r)=>{
-    box(x-r*.12,y-r*.24,r*.24,r*.38);
-    outline(`M${x} ${y-r}L${x+r*.43} ${y-r*.52}H${x+r*.28}L${x+r*.59} ${y-r*.24}H${x+r*.36}L${x+r*.67} ${y}H${x-r*.67}L${x-r*.36} ${y-r*.24}H${x-r*.59}L${x-r*.28} ${y-r*.52}H${x-r*.43}Z`);
-  };
   box(24,24,672,432);
   if(theme==='zen') drawZenBorder(ctx,720,480,24);
   const variation=page%3;
@@ -168,57 +164,6 @@ export function drawCalmPage(ctx,theme,page){
       }
     }
     for(const x of [95,625]) for(const y of [112,173,231]) jewel(x,y,7+variation);
-  }else{
-    ellipse(135+variation*193,111,43+group*3);
-    hill(319,50);
-    hill(402,46);
-    if(group===0){
-      for(let i=0;i<6;i++){
-        const x=97+i*103,y=269+(i%2)*42;
-        box(x-4,y,8,123);
-        petal(x-16,y+65,15);
-        bloom(x,y,23+variation*3,5+variation);
-      }
-      if(variation===1) for(const x of [92,246,411,590]) petal(x,192,18);
-    }else if(group===1){
-      if(variation===1){
-        outline('M190 365H551L507 413H231Z');
-        box(365,199,9,167);
-        outline('M350 205V350H225Z');
-        outline('M390 227L500 350H390Z');
-      }else{
-        for(let i=0;i<8;i++) jewel(105+i*72,194+(i%2)*22,11);
-        ellipse(360,370,132,42);
-        ellipse(360,370,89,24);
-        for(const x of [311,360,409]) ellipse(x,368,15);
-      }
-    }else if(group===2){
-      for(let i=0;i<5;i++){
-        const x=105+i*125,y=307+i%2*50;
-        if(variation===1){
-          ellipse(x,y,42,31);
-          ellipse(x,y,24,31);
-          box(x-5,y-42,10,13);
-        }else if(variation===2){
-          box(x-27,y-35,54,65);
-          box(x-17,y-25,34,45);
-          ellipse(x,y-41,13,8);
-        }else{
-          outline(`M${x} ${y-55}l13 27 24-7-8 21 22 13-29 11 4 21-26-13-26 13 4-21-29-11 22-13-8-21 24 7Z`);
-        }
-      }
-    }else{
-      for(const [x,y,r] of [[106,370,95],[200,400,76],[541,378,90],[629,398,72]]) pine(x,y,r);
-      if(variation===1){
-        box(273,321,175,95);
-        outline('M250 321L360 230L470 321Z');
-        box(302,348,33,33);
-        box(383,351,34,65);
-      }else{
-        for(const x of [274,360,446]) bloom(x,278+variation*23,26+variation*4,6);
-      }
-      for(const x of [97,228,498,620]) jewel(x,184+(x%3)*13,8);
-    }
   }
   ctx.restore();
 }
