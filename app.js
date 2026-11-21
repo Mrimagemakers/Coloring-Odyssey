@@ -1,7 +1,9 @@
 import {books,artwork} from './art.js?v=distinct-seasons-1';
-import {setupFriendWorlds} from './friend-worlds.js?v=3';
+import {setupFriendWorlds} from './friend-worlds.js?v=4';
 import {makeVRWorlds} from './vr-worlds.js?v=1';
 import {drawZenBorder} from './calm-pages.js?v=4';
+import {paintStroke,originalSurface} from './drawing-tools.js?v=1';
+import {drawCustomPage} from './page-maker.js?v=1';
 import {bookPages} from './book-pages.js';
 
 const generatedTitles=['Owl and Rabbit','Sunflower Patch','Castle in the Clouds','Camper in the Pines','The Young Engineer','Star Quilt Rosette'];
@@ -64,12 +66,14 @@ let book=0,page=0,mode='fill',history=[],stroke=null,importId=0;
 let updatePreview=()=>{};
 const edits=new Map(), imports=new Map(), pdfs=new Map();
 let loading=false, changed=false;
-let fillBoundary=null;
+let fillBoundary=null, cleanSurface;
+const customPages=new Map();
+let nextCustomPage=-2;
 const snapshot=()=>ctx.getImageData(0,0,canvas.width,canvas.height);
 const refresh=()=>updatePreview();
 const key=()=>book+':'+page+(page===-1 && pdfs.has(book) ? ':'+pdfs.get(book).page : '');
-const title=()=>page===-1?imports.get(book)?.name:
-  books[book][3][page]??(books[book][0]+' · '+(sourcePage(book,page)===2?'Color Test':'Book Page '+sourcePage(book,page)));
+const title=()=>customPages.get(page)?.name??(page===-1?imports.get(book)?.name:
+  books[book][3][page]??(books[book][0]+' · '+(sourcePage(book,page)===2?'Color Test':'Book Page '+sourcePage(book,page))));
 const status=message=>{$('status').textContent=message;};
 function chooseColor(color){
   $('color').value=color;
@@ -220,6 +224,7 @@ async function open(nextBook,nextPage,remember=true){
   }
   $('pages').replaceChildren(...groups);
   if(imports.has(book)) $('pages').append(new Option(imports.get(book).name,-1));
+  for(const [index,custom] of customPages) if(custom.book===book) $('pages').append(new Option(custom.name,index));
   $('pages').value=page;
   browseOffset=Math.floor(Math.max(0,page)/browseSize)*browseSize;
   if($('page-browser').open) showPageTiles();
@@ -233,7 +238,10 @@ async function open(nextBook,nextPage,remember=true){
   $('next').disabled=page<0 || page>=pageCount(book)-1;
   setLoading(false);
   const original=sourcePage(book,page);
-  if(imported){
+  if(customPages.has(page)){
+    fitPaper(720,480);
+    drawCustomPage(ctx,customPages.get(page));
+  }else if(imported){
     fitPaper(imported.width,imported.height);
     ctx.putImageData(imported,0,0);
   }else if(generatedTile(book,page)>=0){
@@ -269,7 +277,9 @@ async function open(nextBook,nextPage,remember=true){
     fitPaper(720,480);
     artwork(ctx,book,page);
   }
-  fillBoundary=buildFillBoundary(snapshot());
+  const originalPixels=snapshot();
+  fillBoundary=buildFillBoundary(originalPixels);
+  cleanSurface=originalSurface(originalPixels);
   if(edit) ctx.putImageData(edit,0,0);
   status(mode==='fill'?'Tap an enclosed area to fill it.':'Drag to paint.');
   refresh();
@@ -296,6 +306,20 @@ for(const tool of ['fill','brush']) $(''+tool).onclick=()=>{
   status(mode==='fill'?'Tap an enclosed area to fill it.':'Drag to paint.');
 };
 $('color').oninput=event=>chooseColor(event.target.value);
+$('utensil').onchange=()=>$('brush').click();
+$('page-maker').onsubmit=event=>{
+  event.preventDefault();
+  const data=new FormData(event.currentTarget);
+  const name=String(data.get('title')).trim()||'My coloring page';
+  const theme=String(data.get('theme'));
+  const detail=Number(data.get('detail'));
+  const seed=String(data.get('seed')).trim()||crypto.randomUUID();
+  const index=nextCustomPage--;
+  customPages.set(index,{name,theme,detail,seed,book});
+  open(book,index);
+  $('studio').scrollIntoView();
+  status('Created “'+name+'”. Choose Fill or a drawing tool.');
+};
 function buildFillBoundary({data,width,height}){
   const ink=new Uint8Array(width*height);
   for(let i=0;i<ink.length;i++){
@@ -360,19 +384,9 @@ function point(event){
   return {x:(event.clientX-rect.left)*canvas.width/rect.width,y:(event.clientY-rect.top)*canvas.height/rect.height};
 }
 function draw(from,to){
-  const size=Number($('size').value);
-  ctx.strokeStyle=ctx.fillStyle=$('color').value;
-  ctx.lineWidth=size;
-  ctx.lineCap='round';
-  ctx.beginPath();
-  if(from===to){
-    ctx.arc(to.x,to.y,size/2,0,Math.PI*2);
-    ctx.fill();
-  }else{
-    ctx.moveTo(from.x,from.y);
-    ctx.lineTo(to.x,to.y);
-    ctx.stroke();
-  }
+  paintStroke(ctx,[from.x,from.y],[to.x,to.y],{
+    size:Number($('size').value),color:$('color').value,utensil:$('utensil').value,original:cleanSurface
+  });
   refresh();
 }
 canvas.onpointerdown=event=>{

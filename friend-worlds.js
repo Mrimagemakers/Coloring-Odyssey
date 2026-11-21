@@ -1,3 +1,5 @@
+import {paintStroke,isUtensil,originalSurface} from './drawing-tools.js?v=1';
+
 const worlds={
   studio:{title:'Art Studio',sheets:[['Blank canvas'],['The Artist’s Desk',5,0,0],['Butterfly Greenhouse',5,0,1],['Petal Patchwork',9,2,2]]},
   odyssey:{title:'Coloring Odyssey World',sheets:[['Hue’s Skyline Mural',0,2,3],['Carl’s Ringed Planet',1,0,4],['Janice’s Jellyfish Reef',2,0,5]]}
@@ -12,7 +14,7 @@ export function setupFriendWorlds({artwork,buildFillBoundary,saveArtwork,shareAr
   const saveStatus=message=>{$('room-save-status').textContent=message;};
   const guests=new Set(), drafts=new Map();
   let world, sheet=0, boundary, peer, host, id, connecting=false, ready=true, generation=0, revision=0;
-  let tool='brush', stroke;
+  let tool='brush', stroke, cleanSurface;
   let illustrations;
   const artSheet=new Image();
   artSheet.src='./pages/create-together-illustrations.png';
@@ -37,7 +39,9 @@ export function setupFriendWorlds({artwork,buildFillBoundary,saveArtwork,shareAr
       ctx.fillStyle='#fff';
       ctx.fillRect(0,0,width,height);
     }else drawIllustration(ctx,book,page,tile);
-    boundary=buildFillBoundary(ctx.getImageData(0,0,width,height));
+    const original=ctx.getImageData(0,0,width,height);
+    boundary=buildFillBoundary(original);
+    cleanSurface=originalSurface(original);
   }
   function controls(){
     $('room-host').hidden=Boolean(id||connecting);
@@ -129,18 +133,9 @@ export function setupFriendWorlds({artwork,buildFillBoundary,saveArtwork,shareAr
     const {from,to,color,size}=action;
     if(action.tool==='fill'){fill(...to,color);return true;}
     if(action.tool!=='brush') return false;
-    ctx.fillStyle=ctx.strokeStyle=color;
-    ctx.lineWidth=size;
-    ctx.lineCap='round';
-    ctx.beginPath();
-    if(from[0]===to[0]&&from[1]===to[1]){
-      ctx.arc(...to,size/2,0,Math.PI*2);
-      ctx.fill();
-    }else{
-      ctx.moveTo(...from);
-      ctx.lineTo(...to);
-      ctx.stroke();
-    }
+    const utensil=action.utensil??'brush';
+    if(!isUtensil(utensil)) return false;
+    paintStroke(ctx,from,to,{size,color,utensil,original:cleanSurface});
     return true;
   }
   function send(link,message){
@@ -151,7 +146,7 @@ export function setupFriendWorlds({artwork,buildFillBoundary,saveArtwork,shareAr
     for(const link of guests) send(link,message);
   }
   function submit(from,to){
-    const action={from,to,tool,color:$('room-color').value,size:Number($('room-size').value)};
+    const action={from,to,tool,utensil:$('room-utensil').value,color:$('room-color').value,size:Number($('room-size').value)};
     const message={type:'draw',revision,action};
     if(host) send(host,message);
     else if(apply(action)) broadcast(message);
@@ -182,6 +177,7 @@ export function setupFriendWorlds({artwork,buildFillBoundary,saveArtwork,shareAr
     tool=name;
     for(const option of ['brush','fill']) $('room-'+option).setAttribute('aria-pressed',String(option===tool));
   };
+  $('room-utensil').onchange=()=>$('room-brush').click();
   picker.onchange=()=>{
     revision++;
     reset(Number(picker.value));
