@@ -139,8 +139,14 @@ header nav a{color:#f3e7fc;text-underline-offset:4px}
 .vr-setting{display:flex;gap:6px;align-items:center}
 @media(prefers-reduced-motion:reduce){#mind-orb[data-phase]{transform:none;transition:none}}
 @media(max-width:780px){.mind-grid{grid-template-columns:1fr}}
+
+.print-feature{padding:0;overflow:hidden}
+.print-feature-art{display:block;background:#211734}
+.print-feature-art img{display:block;width:100%;height:auto}
+.print-feature-action{display:flex;justify-content:center;padding:15px;background:#21172e}
+#book-collection{scroll-margin-top:18px}
 </style></head>
-<body><header><strong>PENGAME PUBLISHING</strong><nav class="row"><a href="#worlds">Create together</a><a href="#gallery-title">My gallery</a><a href="#community">Community</a><a href="#mindfulness">Mindfulness</a></nav><div class="music-controls"><button type="button" id="music-toggle" aria-pressed="false">♫ Play music</button><label>Track <select id="music-track"><option value="0">Soft Chimes</option><option value="1">Still Water</option><option value="2">Moonlit Pines</option><option value="3">Morning Light</option></select></label><label>Volume <input type="range" id="music-volume" min="0" max="100" value="38"></label><span id="music-status" role="status"></span></div></header><main>
+<body><header><strong>PENGAME PUBLISHING</strong><nav class="row"><a href="#worlds">Create together</a><a href="#gallery-title">My gallery</a><a href="#community">Community</a><a href="#print-editions">Print editions</a><a href="#mindfulness">Mindfulness</a></nav><div class="music-controls"><button type="button" id="music-toggle" aria-pressed="false">♫ Play music</button><label>Track <select id="music-track"><option value="0">Soft Chimes</option><option value="1">Still Water</option><option value="2">Moonlit Pines</option><option value="3">Morning Light</option></select></label><label>Volume <input type="range" id="music-volume" min="0" max="100" value="38"></label><span id="music-status" role="status"></span></div></header><main>
 <section class="hero"><div><div class="eyebrow">The Coloring Odyssey Collection</div><h1>Coloring<br><em>Odyssey</em></h1><p>Follow Hue’s magic pen through New York, explore space with Carl, and dive beneath the waves with Dr. Janice Miller.</p><div class="row"><a class="primary" href="#studio">Start coloring</a><label class="vr-setting">VR setting <select id="vr-world"><option value="0">Gallery Studio</option><option value="1">Moonlit Zen Garden</option></select></label><button id="vr" disabled><span class="tool-icon" aria-hidden="true">◇</span>Enter VR</button></div><p id="xr-status" role="status">Checking VR support…</p></div><div class="stage" id="stage" aria-hidden="true"></div></section>
 <section id="mindfulness" class="gallery-exhibit">
 <h2>Mindful Coloring</h2>
@@ -163,7 +169,11 @@ header nav a{color:#f3e7fc;text-underline-offset:4px}
 <div class="row canvas-zoom" data-canvas-zoom="room-canvas" role="group" aria-label="Canvas zoom"><button type="button" data-zoom-out aria-label="Zoom out" disabled>−</button><button type="button" data-zoom-reset aria-label="Reset zoom">100%</button><button type="button" data-zoom-in aria-label="Zoom in">+</button></div><div class="room-paper"><canvas id="room-canvas" class="friend-board" width="720" height="480" aria-label="Shared drawing canvas"></canvas></div>
 <div class="row"><button id="room-save" type="button">Save to gallery</button><button id="room-share" type="button">Share PNG</button><span id="room-save-status" role="status"></span></div>
 </section></section>
-<section class="gallery-exhibit"><h2>Explore Categories</h2><div class="books" id="books"></div></section>
+<section id="print-editions" class="gallery-exhibit print-feature" aria-label="Coloring Odyssey print editions">
+<a class="print-feature-art" href="#book-collection" aria-label="Explore Coloring Odyssey print editions"><img src="./assets/coloring-odyssey-promo.jpg" alt="Coloring Odyssey, available in print" width="1024" height="500" loading="lazy" decoding="async"></a>
+<div class="print-feature-action"><a class="primary" href="#book-collection">Explore print editions</a></div>
+</section>
+<section id="book-collection" class="gallery-exhibit"><h2>Explore Categories</h2><div class="books" id="books"></div></section>
 <section id="studio"><h2 id="book-title">Coloring Studio</h2><details id="page-browser" class="page-browser" open><summary>Browse coloring pages</summary><div class="thumb-controls"><button id="tiles-back" type="button" aria-label="Previous thumbnails">‹</button><span id="tile-count" aria-live="polite"></span><button id="tiles-forward" type="button" aria-label="Next thumbnails">›</button></div><div id="page-thumbnails" class="page-thumbnails"></div></details><div class="studio"><div class="tools">
 <label class="page-picker">Page <select id="pages"></select></label>
 <div class="row page-nav"><button id="previous" type="button"><span class="tool-icon" aria-hidden="true">‹</span>Previous page</button><button id="next" type="button"><span class="tool-icon" aria-hidden="true">›</span>Next page</button></div><div class="row" id="palette" aria-label="Color palette"></div>
