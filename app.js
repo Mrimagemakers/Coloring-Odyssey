@@ -6,7 +6,7 @@ import {drawZenBorder} from './calm-pages.js?v=4';
 import {paintStroke,originalSurface} from './drawing-tools.js?v=1';
 import {drawCustomPage} from './page-maker.js?v=1';
 import {bookPages} from './book-pages.js';
-import {categoryPages} from './category-pages.js?v=1';
+import {categoryPages} from './category-pages.js?v=2';
 
 import {colorRegion} from './fill-region.js?v=1';
 
